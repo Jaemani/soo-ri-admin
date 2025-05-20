@@ -22,7 +22,7 @@ export const login = async (credentials: LoginCredentials): Promise<LoginRespons
     return mockLogin(credentials);
   }
 
-  const response = await fetch('https://soo-ri-back.kro.kr/api/admin/login', {
+  const response = await fetch('${process.env.REACT_APP_API_URL}/admin/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

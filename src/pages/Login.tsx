@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import { login } from '../services/auth';
 import './Login.css';
 
 const Login: React.FC = () => {
@@ -17,7 +18,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('${process.env.REACT_APP_API_URL}/admin/login', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -25,13 +26,9 @@ const Login: React.FC = () => {
         body: JSON.stringify({ id, password }),
         credentials: 'include',
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || '로그인에 실패했습니다.');
-      }
-
+      
       const data = await response.json();
+      
       if (data.success && data.token) {
         localStorage.setItem('token', data.token);
         if (data.admin) {

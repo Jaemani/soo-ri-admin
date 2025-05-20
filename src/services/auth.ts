@@ -16,7 +16,7 @@ interface LoginCredentials {
 
 // Set this to false when you want to use the real API
 const USE_MOCK = false;
-const API_BASE_URL = `${process.env.REACT_APP_API_URL}/admin/login`
+const API_BASE_URL = `${process.env.REACT_APP_API_URL}/admin/login`;
 
 export const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
   if (USE_MOCK) {
@@ -26,10 +26,10 @@ export const login = async (credentials: LoginCredentials): Promise<LoginRespons
   const response = await fetch(API_BASE_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer <token>'
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(credentials),
+    credentials: 'include'
   });
 
   if (!response.ok) {

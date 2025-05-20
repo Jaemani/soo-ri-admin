@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 import './Login.css';
 
 const Login: React.FC = () => {
@@ -15,7 +17,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://soo-ri-back.kro.kr/api/admin/login', {
+      const response = await fetch('${process.env.REACT_APP_API_URL}/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,66 +51,49 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <div className="login-card">
-        <div className="login-logo">
-          {/* Replace with your actual logo if available */}
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 40C31.0457 40 40 31.0457 40 20C40 8.95431 31.0457 0 20 0C8.95431 0 0 8.95431 0 20C0 31.0457 8.95431 40 20 40Z" fill="#1A237E" fillOpacity="0.9"/>
-            <path d="M13 13L27 27" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M13 27L27 13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </div>
-        
+      <Card className="login-card">
         <h1 className="login-title">수리수리 마수리</h1>
         <h2 className="login-subtitle">관리자 로그인</h2>
         
-        {error && <div className="login-error">{error}</div>}
-        
-        <form className="login-form" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" htmlFor="user-id">아이디</label>
+            <label className="form-label">아이디</label>
             <input
-              id="user-id"
-              className="form-input"
               type="text"
               value={id}
               onChange={(e) => setId(e.target.value)}
               placeholder="아이디를 입력하세요"
               disabled={isLoading}
+              className="form-control"
             />
           </div>
           
           <div className="form-group">
-            <label className="form-label" htmlFor="user-password">비밀번호</label>
+            <label className="form-label">비밀번호</label>
             <input
-              id="user-password"
-              className="form-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요"
               disabled={isLoading}
+              className="form-control"
             />
           </div>
           
-          <button
-            className="login-button"
+          {error && (
+            <p className="login-error">{error}</p>
+          )}
+          
+          <Button 
             type="submit"
+            variant="primary"
+            size="large"
             disabled={isLoading || !id || !password}
           >
-            {isLoading ? (
-              <>
-                <span className="login-loading"></span>
-                로그인 중...
-              </>
-            ) : '로그인'}
-          </button>
+            {isLoading ? '로그인 중...' : '로그인'}
+          </Button>
         </form>
-        
-        <div className="login-footer">
-          수리수리 마수리 ⓒ 2023
-        </div>
-      </div>
+      </Card>
     </div>
   );
 };

@@ -5,7 +5,6 @@
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^16.18.126",
     "@types/react": "^19.1.4",
@@ -48,7 +47,6 @@
   "proxy": "https://soo-ri-back.kro.kr",
   "devDependencies": {
     "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
     "@types/jest": "^29.5.14",
     "identity-obj-proxy": "^3.0.0",

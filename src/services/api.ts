@@ -2,7 +2,7 @@ import { Repair, DiagnosticReport } from '../types';
 import { User, UsersResponse } from './users';
 
 // In development, we'll use a proxy to avoid CORS issues
-const API_BASE_URL = 'http://localhost:3000/api/admin';
+const API_BASE_URL = 'https://soo-ri-back.kro.kr/api/admin';
 
 export interface ApiError {
   message: string;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/admin/login', {
+      const response = await fetch('https://soo-ri-back.kro.kr/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,119 +48,66 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      background: '#f5f5f5'
-    }}>
-      <div style={{
-        background: 'white',
-        padding: '40px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        width: '100%',
-        maxWidth: '400px'
-      }}>
-        <h1 style={{ 
-          marginBottom: '30px', 
-          textAlign: 'center',
-          color: '#1a237e',
-          fontSize: '24px'
-        }}>
-          수리수리 마수리
-        </h1>
-        <h2 style={{
-          marginBottom: '30px',
-          textAlign: 'center',
-          color: '#666',
-          fontSize: '18px',
-          fontWeight: 'normal'
-        }}>
-          관리자 로그인
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px',
-              color: '#333',
-              fontSize: '14px'
-            }}>
-              아이디
-            </label>
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-logo">
+          {/* Replace with your actual logo if available */}
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 40C31.0457 40 40 31.0457 40 20C40 8.95431 31.0457 0 20 0C8.95431 0 0 8.95431 0 20C0 31.0457 8.95431 40 20 40Z" fill="#1A237E" fillOpacity="0.9"/>
+            <path d="M13 13L27 27" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M13 27L27 13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </div>
+        
+        <h1 className="login-title">수리수리 마수리</h1>
+        <h2 className="login-subtitle">관리자 로그인</h2>
+        
+        {error && <div className="login-error">{error}</div>}
+        
+        <form className="login-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="user-id">아이디</label>
             <input
+              id="user-id"
+              className="form-input"
               type="text"
               value={id}
               onChange={(e) => setId(e.target.value)}
               placeholder="아이디를 입력하세요"
               disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
             />
           </div>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px',
-              color: '#333',
-              fontSize: '14px'
-            }}>
-              비밀번호
-            </label>
+          
+          <div className="form-group">
+            <label className="form-label" htmlFor="user-password">비밀번호</label>
             <input
+              id="user-password"
+              className="form-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요"
               disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '16px',
-                boxSizing: 'border-box'
-              }}
             />
           </div>
-          {error && (
-            <p style={{ 
-              color: '#d32f2f',
-              marginBottom: '20px', 
-              textAlign: 'center',
-              fontSize: '14px'
-            }}>
-              {error}
-            </p>
-          )}
+          
           <button
+            className="login-button"
             type="submit"
             disabled={isLoading || !id || !password}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: '#1a237e',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: (isLoading || !id || !password) ? 'not-allowed' : 'pointer',
-              opacity: (isLoading || !id || !password) ? 0.7 : 1,
-              fontSize: '16px',
-              fontWeight: '500',
-              transition: 'all 0.2s'
-            }}
           >
-            {isLoading ? '로그인 중...' : '로그인'}
+            {isLoading ? (
+              <>
+                <span className="login-loading"></span>
+                로그인 중...
+              </>
+            ) : '로그인'}
           </button>
         </form>
+        
+        <div className="login-footer">
+          수리수리 마수리 ⓒ 2023
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,33 @@
+.card {
+  background-color: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-title {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+  font-weight: 500;
+  color: var(--gray-900);
+}
+
+.card-content {
+  position: relative;
+}
+
+/* Variant styles */
+.card-info {
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-200);
+}
+
+.card-warning {
+  background-color: var(--warning-50);
+  border: 1px solid var(--warning-500);
+}
+
+.card-success {
+  background-color: var(--success-50);
+  border: 1px solid var(--success-500);
+} 

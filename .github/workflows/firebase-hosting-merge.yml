@@ -20,7 +20,7 @@ jobs:
 
       - name: Write .env.production
         run: |
-          echo "REACT_APP_API_URL=https://soo-ri-kro.kr/api" > .env.production
+          echo "REACT_APP_API_URL=https://soo-ri-back.kro.kr/api" > .env.production
 
       - name: Clean previous build
         run: rm -rf build/

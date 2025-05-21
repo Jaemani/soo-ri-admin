@@ -194,12 +194,12 @@ const Repairs: React.FC = () => {
     }
     if (filters.startDate) {
       filtered = filtered.filter(repair => 
-        new Date(repair.repairedDate) >= new Date(filters.startDate)
+        new Date(repair.repairedAt) >= new Date(filters.startDate)
       );
     }
     if (filters.endDate) {
       filtered = filtered.filter(repair => 
-        new Date(repair.repairedDate) <= new Date(filters.endDate)
+        new Date(repair.repairedAt) <= new Date(filters.endDate)
       );
     }
     if (filters.repairType) {
@@ -341,7 +341,7 @@ const Repairs: React.FC = () => {
             ) : currentItems.length > 0 ? (
               currentItems.map(repair => (
                 <tr key={repair._id}>
-                  <td>{new Date(repair.repairedDate).toLocaleDateString('ko-KR')}</td>
+                  <td>{new Date(repair.repairedAt).toLocaleDateString('ko-KR')}</td>
                   <td>{repair.vehicleId}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>{repair.isAccident ? '사고' : '정기점검'}</td>

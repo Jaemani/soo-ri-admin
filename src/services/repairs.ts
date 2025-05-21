@@ -12,7 +12,7 @@ export interface RepairInput {
 export interface Repair {
   _id: string;
   vehicleId: string;
-  repairedDate: string;
+  repairedAt: string;
   billingPrice: number;
   isAccident: boolean;
   repairStationCode: string;
@@ -29,7 +29,7 @@ export interface Repair {
 
 export interface RepairCreateInput {
   vehicleId: string;
-  repairedDate: string;
+  repairedAt: string;
   billingPrice: number;
   isAccident: boolean;
   repairStationCode: string;

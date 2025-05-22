@@ -174,4 +174,21 @@
   border-radius: var(--radius-sm);
   margin-top: 1rem;
   text-align: center;
+}
+
+.edit-textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  resize: vertical;
+}
+
+.edit-guardian-help {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+  line-height: 1.3;
 } 

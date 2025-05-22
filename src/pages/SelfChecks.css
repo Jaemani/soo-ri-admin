@@ -1,0 +1,162 @@
+.selfchecks-page {
+  padding: 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin: 0;
+  margin-bottom: 0.5rem;
+}
+
+.page-description {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+.selfchecks-filter-card {
+  margin-bottom: 1rem;
+}
+
+.selfchecks-filter-form {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.selfchecks-search-input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.selfchecks-search-input:focus {
+  outline: none;
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.selfchecks-table-card {
+  overflow: hidden;
+}
+
+.selfchecks-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.selfchecks-table th {
+  background-color: var(--gray-50);
+  color: var(--gray-700);
+  font-weight: 500;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.selfchecks-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--gray-100);
+  color: var(--gray-700);
+}
+
+.selfchecks-table tr:hover {
+  background-color: var(--gray-50);
+}
+
+.selfchecks-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.selfchecks-pagination-info {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+}
+
+.selfchecks-error {
+  color: var(--red-600);
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Skeleton loading animation */
+.skeleton-row td {
+  padding: 1rem;
+}
+
+.skeleton-cell {
+  height: 1.2rem;
+  background-color: var(--gray-200);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Detail view styling */
+.selfcheck-detail {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.selfcheck-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.selfcheck-detail-label {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.selfcheck-detail-value {
+  font-size: 0.875rem;
+  color: var(--gray-900);
+}
+
+.issue-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.issue-tag.true {
+  background-color: var(--red-100);
+  color: var(--red-800);
+}
+
+.issue-tag.false {
+  background-color: var(--green-100);
+  color: var(--green-800);
+} 

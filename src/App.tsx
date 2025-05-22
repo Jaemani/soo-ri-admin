@@ -4,6 +4,7 @@ import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Repairs from './pages/Repairs';
+import SelfChecks from './pages/SelfChecks';
 import { UserProvider } from './contexts/UserContext';
 import Login from './pages/Login';
 import PrivateRoute from './components/PrivateRoute';
@@ -19,11 +20,11 @@ const App: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route element={<PrivateRoute />}>
           <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/repairs" element={<Repairs />} />
-            <Route path="/monitoring" element={<Monitoring />} />
-            <Route path="/statistics" element={<Statistics />} />
+            <Route index element={<Navigate to="/dashboard" />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="repairs" element={<Repairs />} />
+            <Route path="selfchecks" element={<SelfChecks />} />
           </Route>
         </Route>
         {/* Catch all route - redirect to home */}

@@ -2,7 +2,7 @@ import { Repair, DiagnosticReport } from '../types';
 import { User, UsersResponse } from './users';
 
 // Correctly using backticks for template literals to evaluate environment variables
-const API_BASE_URL = `${process.env.REACT_APP_API_URL}/admin`;
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 export interface ApiError {
   message: string;

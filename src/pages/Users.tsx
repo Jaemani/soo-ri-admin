@@ -8,19 +8,25 @@ import './Users.css';
 interface User extends BaseUser {
   guardians?: {
     name: string;
-    phoneNumber: string;
   }[];
 }
 
+// Add new interface for editable user
+interface EditableUser extends User {
+  isEditing?: boolean;
+  guardianText?: string; // Add field for text-based guardian editing
+}
+
 const Users: React.FC = () => {
-  const [allUsers, setAllUsers] = useState<User[]>([]); // All users from API
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]); // Filtered users for display
+  const [allUsers, setAllUsers] = useState<EditableUser[]>([]); // All users from API
+  const [filteredUsers, setFilteredUsers] = useState<EditableUser[]>([]); // Filtered users for display
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [itemsPerPage] = useState(10);
+  const [editingUser, setEditingUser] = useState<EditableUser | null>(null);
 
   useEffect(() => {
     // Force the skeleton loader to show briefly before fetching data
@@ -52,7 +58,16 @@ const Users: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 1200 - loadingTime));
       }
       
-      setAllUsers(response.users);
+      // Filter out guardian users (though backend should already do this)
+      const nonGuardianUsers = response.users.filter(user => user.role !== 'guardian');
+      
+      // Ensure each user has guardians property
+      const usersWithGuardians = nonGuardianUsers.map(user => ({
+        ...user,
+        guardians: user.guardians || []
+      }));
+      
+      setAllUsers(usersWithGuardians);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '사용자 데이터를 불러오는데 실패했습니다.');
@@ -93,10 +108,230 @@ const Users: React.FC = () => {
     }
   };
 
+  // Edit row functionality
+  const handleEditClick = (user: EditableUser) => {
+    // Create guardianText from guardians array for editing
+    const guardianText = user.guardians && user.guardians.length > 0
+      ? user.guardians.map(g => g.name).join('\n')
+      : '';
+      
+    setEditingUser({ 
+      ...user,
+      guardianText
+    });
+    
+    // Update the allUsers array to mark this user as being edited
+    const updatedUsers = allUsers.map(u => 
+      u._id === user._id ? { ...u, isEditing: true } : u
+    );
+    setAllUsers(updatedUsers);
+    
+    // Also update filteredUsers
+    const updatedFilteredUsers = filteredUsers.map(u =>
+      u._id === user._id ? { ...u, isEditing: true } : u
+    );
+    setFilteredUsers(updatedFilteredUsers);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUser(null);
+    
+    // Update the allUsers array to clear editing state
+    const updatedUsers = allUsers.map(u => ({ ...u, isEditing: false }));
+    setAllUsers(updatedUsers);
+    
+    // Also update filteredUsers
+    const updatedFilteredUsers = filteredUsers.map(u => ({ ...u, isEditing: false }));
+    setFilteredUsers(updatedFilteredUsers);
+  };
+
+  const handleInputChange = (field: keyof User, value: string | boolean) => {
+    if (editingUser) {
+      setEditingUser({ ...editingUser, [field]: value });
+    }
+  };
+
+  const handleGuardianTextChange = (value: string) => {
+    if (editingUser) {
+      setEditingUser({ ...editingUser, guardianText: value });
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+    
+    try {
+      setLoading(true);
+      
+      // Prepare the data for API update
+      const updateData: any = {
+        name: editingUser.name,
+        phoneNumber: editingUser.phoneNumber,
+        recipientType: editingUser.recipientType,
+        supportedDistrict: editingUser.supportedDistrict,
+        smsConsent: editingUser.smsConsent
+      };
+      
+      // Add guardians if text is provided
+      if (editingUser.guardianText !== undefined) {
+        updateData.guardians = editingUser.guardianText;
+      }
+      
+      console.log('Updating user:', editingUser, 'with data:', updateData);
+      
+      // Send update to the API
+      await userService.updateUser(editingUser._id, updateData);
+      
+      // Clear editing state
+      setEditingUser(null);
+      
+      // Refresh the data to get the updated guardians
+      await fetchAllUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '사용자 업데이트에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Get current page of users
   const indexOfLastUser = currentPage * itemsPerPage;
   const indexOfFirstUser = indexOfLastUser - itemsPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  // Render user row based on edit state
+  const renderUserRow = (user: EditableUser) => {
+    if (user.isEditing) {
+      return (
+        <tr key={user._id} className="edit-row">
+          <td>
+            <input
+              type="text"
+              value={editingUser?.name || ''}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              className="edit-input"
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              value={editingUser?.phoneNumber || ''}
+              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+              className="edit-input"
+            />
+          </td>
+          <td>
+            <select
+              value={editingUser?.recipientType || ''}
+              onChange={(e) => handleInputChange('recipientType', e.target.value)}
+              className="edit-select"
+            >
+              <option value="일반">일반</option>
+              <option value="차상위">차상위</option>
+              <option value="수급자">수급자</option>
+              <option value="미등록">미등록</option>
+            </select>
+          </td>
+          <td>
+            <select
+              value={editingUser?.supportedDistrict || ''}
+              onChange={(e) => handleInputChange('supportedDistrict', e.target.value)}
+              className="edit-select"
+            >
+              <option value="강남구">강남구</option>
+              <option value="강동구">강동구</option>
+              <option value="강북구">강북구</option>
+              <option value="강서구">강서구</option>
+              <option value="관악구">관악구</option>
+              <option value="광진구">광진구</option>
+              <option value="구로구">구로구</option>
+              <option value="금천구">금천구</option>
+              <option value="노원구">노원구</option>
+              <option value="도봉구">도봉구</option>
+              <option value="동대문구">동대문구</option>
+              <option value="동작구">동작구</option>
+              <option value="마포구">마포구</option>
+              <option value="서대문구">서대문구</option>
+              <option value="서초구">서초구</option>
+              <option value="성동구">성동구</option>
+              <option value="성북구">성북구</option>
+              <option value="송파구">송파구</option>
+              <option value="양천구">양천구</option>
+              <option value="영등포구">영등포구</option>
+              <option value="용산구">용산구</option>
+              <option value="은평구">은평구</option>
+              <option value="종로구">종로구</option>
+              <option value="중구">중구</option>
+              <option value="중랑구">중랑구</option>
+              <option value="서울 외">서울 외</option>
+            </select>
+          </td>
+          <td>
+            <div className="edit-checkbox-container">
+              <input
+                type="checkbox"
+                checked={editingUser?.smsConsent || false}
+                onChange={(e) => handleInputChange('smsConsent', e.target.checked)}
+                className="edit-checkbox"
+                id={`sms-consent-${user._id}`}
+              />
+              <label htmlFor={`sms-consent-${user._id}`}>동의</label>
+            </div>
+          </td>
+          <td>
+            <textarea
+              value={editingUser?.guardianText || ''}
+              onChange={(e) => handleGuardianTextChange(e.target.value)}
+              className="edit-textarea"
+              placeholder="홍길동&#10;김철수"
+              rows={4}
+            />
+            <div className="edit-guardian-help">
+              각 줄에 보호자 이름 입력 (예: 홍길동)
+            </div>
+            <div className="edit-actions">
+              <Button
+                onClick={handleSaveEdit}
+                variant="success"
+                size="small"
+              >
+                적용
+              </Button>
+              <Button
+                onClick={handleCancelEdit}
+                variant="secondary"
+                size="small"
+              >
+                취소
+              </Button>
+            </div>
+          </td>
+        </tr>
+      );
+    } else {
+      return (
+        <tr key={user._id}>
+          <td>{user.name}</td>
+          <td>{user.phoneNumber}</td>
+          <td>{user.recipientType}</td>
+          <td>{user.supportedDistrict}</td>
+          <td>{user.smsConsent ? '동의' : '미동의'}</td>
+          <td>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>{displayGuardians(user)}</div>
+              <Button
+                onClick={() => handleEditClick(user)}
+                variant="primary"
+                size="small"
+              >
+                수정
+              </Button>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+  };
 
   return (
     <div className="users-page">
@@ -126,6 +361,8 @@ const Users: React.FC = () => {
               <th>이름</th>
               <th>전화번호</th>
               <th>유형</th>
+              <th>지원구</th>
+              <th>SMS동의</th>
               <th>보호자</th>
             </tr>
           </thead>
@@ -137,20 +374,15 @@ const Users: React.FC = () => {
                   <td><div className="skeleton-cell" style={{ width: `${80 - (i % 4) * 5}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${60 + (i % 2) * 15}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${50 + (i % 5) * 8}%` }}></div></td>
+                  <td><div className="skeleton-cell" style={{ width: `${40 + (i % 3) * 10}%` }}></div></td>
+                  <td><div className="skeleton-cell" style={{ width: `${50 + (i % 5) * 8}%` }}></div></td>
                 </tr>
               ))
             ) : currentUsers.length > 0 ? (
-              currentUsers.map(user => (
-                <tr key={user._id}>
-                  <td>{user.name}</td>
-                  <td>{user.phoneNumber}</td>
-                  <td>{translateRecipientType(user.recipientType)}</td>
-                  <td>{displayGuardians(user)}</td>
-                </tr>
-              ))
+              currentUsers.map(user => renderUserRow(user))
             ) : (
               <tr>
-                <td colSpan={4} style={{ textAlign: 'center', color: '#888', padding: '2rem' }}>
+                <td colSpan={6} style={{ textAlign: 'center', color: '#888', padding: '2rem' }}>
                   등록된 사용자가 없습니다.
                 </td>
               </tr>
@@ -198,16 +430,6 @@ const translateRole = (role: User['role']) => {
   return roleMap[role] || role;
 };
 
-const translateRecipientType = (type: User['recipientType']) => {
-  const typeMap: Record<User['recipientType'], string> = {
-    general: '일반',
-    lowIncome: '저소득',
-    welfare: '복지',
-    unregistered: '미등록'
-  };
-  return typeMap[type] || type;
-};
-
 const displayGuardians = (user: User) => {
   if (!user.guardians || user.guardians.length === 0) {
     return '미등록';
@@ -216,7 +438,7 @@ const displayGuardians = (user: User) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
       {user.guardians.map((guardian, index) => (
-        <div key={index}>{guardian.name} ({guardian.phoneNumber})</div>
+        <div key={index}>{guardian.name}</div>
       ))}
     </div>
   );

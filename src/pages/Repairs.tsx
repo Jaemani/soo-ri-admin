@@ -14,7 +14,6 @@ interface FilterState {
   endDate: string;
   repairType: string;
   repairStationCode: string;
-  status: string;
   minAmount: string;
   maxAmount: string;
   [key: string]: string;
@@ -26,7 +25,6 @@ const initialFilter: FilterState = {
   endDate: '',
   repairType: '',
   repairStationCode: '',
-  status: '',
   minAmount: '',
   maxAmount: ''
 };
@@ -54,18 +52,7 @@ const filterOptions: FilterOption[] = [
     type: 'select',
     options: [
       { value: 'accident', label: '사고' },
-      { value: 'maintenance', label: '정기점검' },
-      { value: 'repair', label: '수리' }
-    ]
-  },
-  {
-    name: 'status',
-    label: '상태',
-    type: 'select',
-    options: [
-      { value: 'pending', label: '대기중' },
-      { value: 'in_progress', label: '진행중' },
-      { value: 'completed', label: '완료' }
+      { value: 'regular', label: '정기점검' }
     ]
   },
   {
@@ -85,6 +72,16 @@ const TABS = [
   { key: 'all', label: '전체 수리이력' },
   { key: 'user', label: '선택한 사용자 수리이력' }
 ];
+
+// Function to format date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+};
 
 const Repairs: React.FC = () => {
   const [tab, setTab] = useState<'user' | 'all'>('all');
@@ -115,7 +112,7 @@ const Repairs: React.FC = () => {
       vehiclesService.getVehiclesForUser(selectedUserId).then(res => {
         setVehicles(res.vehicles);
         if (res.vehicles.length > 0) {
-          setSelectedVehicleId(res.vehicles[0].vehicleId);
+          setSelectedVehicleId(res.vehicles[0]._id);
         }
       });
     } else {
@@ -134,7 +131,7 @@ const Repairs: React.FC = () => {
       }, 500);
       
       return () => clearTimeout(timer);
-    } else {
+    } else if (tab === 'user' && selectedVehicleId) {
       fetchRepairs();
     }
   }, [tab, selectedVehicleId]);
@@ -154,7 +151,7 @@ const Repairs: React.FC = () => {
       
       let response;
       if (tab === 'user' && selectedVehicleId) {
-        response = await repairService.getRepairsForVehicle(selectedVehicleId);
+        response = await repairService.getVehicleRepairs(selectedVehicleId);
       } else if (tab === 'all') {
         response = await repairService.getRepairs();
       } else {
@@ -171,10 +168,11 @@ const Repairs: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 1200 - loadingTime));
       }
       
-      setRepairs(response.repairs);
+      setRepairs(response.repairs || []);
       setTotalPages(response.totalPages || 1);
       setCurrentPage(1);
     } catch (e) {
+      console.error('Error fetching repairs:', e);
       setRepairs([]);
       setTotalPages(1);
     } finally {
@@ -186,11 +184,15 @@ const Repairs: React.FC = () => {
     let filtered = [...repairs];
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(repair => 
-        repair.vehicleId.toLowerCase().includes(searchLower) ||
-        repair.repairStationLabel.toLowerCase().includes(searchLower) ||
-        repair.memo?.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter(repair => {
+        const vehicleId = repair.vehicle?.vehicleId || repair.vehicleId;
+        return (
+          (vehicleId && vehicleId.toString().toLowerCase().includes(searchLower)) ||
+          (repair.repairStationLabel && repair.repairStationLabel.toLowerCase().includes(searchLower)) ||
+          (repair.memo && repair.memo.toLowerCase().includes(searchLower)) ||
+          (repair.repairCategories && repair.repairCategories.some(c => c.toLowerCase().includes(searchLower)))
+        );
+      });
     }
     if (filters.startDate) {
       filtered = filtered.filter(repair => 
@@ -210,11 +212,6 @@ const Repairs: React.FC = () => {
     if (filters.repairStationCode) {
       filtered = filtered.filter(repair => 
         repair.repairStationCode === filters.repairStationCode
-      );
-    }
-    if (filters.status) {
-      filtered = filtered.filter(repair => 
-        repair.status === filters.status
       );
     }
     if (filters.minAmount) {
@@ -247,6 +244,12 @@ const Repairs: React.FC = () => {
     setFilters(initialFilter);
     setSelectedUserId('');
     setSelectedVehicleId('');
+  };
+
+  // Format repair categories
+  const formatRepairCategories = (categories: string[]) => {
+    if (!categories || categories.length === 0) return '없음';
+    return categories.join(', ');
   };
 
   return (
@@ -290,8 +293,8 @@ const Repairs: React.FC = () => {
                 onChange={e => setSelectedVehicleId(e.target.value)}
               >
                 {vehicles.map(v => (
-                  <option key={v.vehicleId} value={v.vehicleId}>
-                    {v.model ? `${v.model} (${v.vehicleId})` : v.vehicleId}
+                  <option key={v._id} value={v._id}>
+                    {v.vehicleId ? `${v.vehicleId}${v.model ? ` (${v.model})` : ''}` : v._id}
                   </option>
                 ))}
               </select>
@@ -320,9 +323,9 @@ const Repairs: React.FC = () => {
               <th>차량번호</th>
               <th>정비소</th>
               <th>수리 유형</th>
-              <th>수리 내용</th>
-              <th>수리 금액</th>
-              <th>상태</th>
+              <th>수리 항목</th>
+              <th>금액</th>
+              <th>메모</th>
             </tr>
           </thead>
           <tbody>
@@ -341,18 +344,17 @@ const Repairs: React.FC = () => {
             ) : currentItems.length > 0 ? (
               currentItems.map(repair => (
                 <tr key={repair._id}>
-                  <td>{new Date(repair.repairedAt).toLocaleDateString('ko-KR')}</td>
-                  <td>{repair.vehicleId}</td>
+                  <td>{formatDate(repair.repairedAt)}</td>
+                  <td>{repair.vehicle?.vehicleId || '미상'}</td>
                   <td>{repair.repairStationLabel}</td>
-                  <td>{repair.isAccident ? '사고' : '정기점검'}</td>
-                  <td>{repair.memo}</td>
-                  <td>{repair.billingPrice.toLocaleString()}원</td>
                   <td>
-                    <span className={`tag tag-${repair.status}`}>
-                      {repair.status === 'pending' ? '대기중' : 
-                       repair.status === 'in_progress' ? '진행중' : '완료'}
+                    <span className={`tag ${repair.isAccident ? 'tag-accident' : 'tag-regular'}`}>
+                      {repair.isAccident ? '사고' : '정기점검'}
                     </span>
                   </td>
+                  <td>{formatRepairCategories(repair.repairCategories)}</td>
+                  <td>{repair.billingPrice.toLocaleString()}원</td>
+                  <td>{repair.memo || '-'}</td>
                 </tr>
               ))
             ) : (

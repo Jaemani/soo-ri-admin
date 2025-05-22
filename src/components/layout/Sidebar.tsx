@@ -4,7 +4,7 @@ import './Sidebar.css';
 
 const navItems = [
   { 
-    path: '/', 
+    path: '/dashboard', 
     label: '대시보드 홈', 
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -35,7 +35,7 @@ const navItems = [
     )
   },
   { 
-    path: '/monitoring', 
+    path: '/selfchecks', 
     label: '자가진단 모니터링', 
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

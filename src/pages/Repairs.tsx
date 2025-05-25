@@ -111,9 +111,6 @@ const Repairs: React.FC = () => {
       setSelectedVehicleId('');
       vehiclesService.getVehiclesForUser(selectedUserId).then(res => {
         setVehicles(res.vehicles);
-        if (res.vehicles.length > 0) {
-          setSelectedVehicleId(res.vehicles[0]._id);
-        }
       });
     } else {
       setVehicles([]);
@@ -124,13 +121,7 @@ const Repairs: React.FC = () => {
   // Fetch repairs
   useEffect(() => {
     if (tab === 'all') {
-      // Force the skeleton loader to show briefly before fetching data
-      setLoading(true);
-      const timer = setTimeout(() => {
-        fetchRepairs();
-      }, 500);
-      
-      return () => clearTimeout(timer);
+      fetchRepairs();
     } else if (tab === 'user' && selectedVehicleId) {
       fetchRepairs();
     }
@@ -143,17 +134,36 @@ const Repairs: React.FC = () => {
   const fetchRepairs = async () => {
     setLoading(true);
     try {
-      // Add small initial delay to ensure loading state is applied in the UI
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Add a minimum loading time to ensure the shimmer effect is visible
-      const loadingStartTime = Date.now();
-      
       let response;
       if (tab === 'user' && selectedVehicleId) {
         response = await repairService.getVehicleRepairs(selectedVehicleId);
+        // Enhance repairs with user and vehicle info
+        const selectedVehicleInfo = vehicles.find(v => v._id === selectedVehicleId);
+        const selectedUserInfo = users.find(u => u._id === selectedUserId);
+        
+        response.repairs = response.repairs.map(repair => ({
+          ...repair,
+          vehicle: selectedVehicleInfo ? {
+            _id: selectedVehicleInfo._id,
+            vehicleId: selectedVehicleInfo.vehicleId
+          } : undefined,
+          user: selectedUserInfo ? {
+            _id: selectedUserInfo._id,
+            name: selectedUserInfo.name,
+            phoneNumber: selectedUserInfo.phoneNumber
+          } : undefined
+        }));
       } else if (tab === 'all') {
-        response = await repairService.getRepairs();
+        response = await repairService.getAllRepairs({
+          page: currentPage,
+          limit: itemsPerPage,
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+          repairType: filters.repairType,
+          repairStationCode: filters.repairStationCode,
+          minAmount: filters.minAmount,
+          maxAmount: filters.maxAmount
+        });
       } else {
         setRepairs([]);
         setTotalPages(1);
@@ -162,15 +172,9 @@ const Repairs: React.FC = () => {
         return;
       }
       
-      // Ensure loading state is shown for at least 1200ms for better UX
-      const loadingTime = Date.now() - loadingStartTime;
-      if (loadingTime < 1200) {
-        await new Promise(resolve => setTimeout(resolve, 1200 - loadingTime));
-      }
-      
       setRepairs(response.repairs || []);
       setTotalPages(response.totalPages || 1);
-      setCurrentPage(1);
+      setCurrentPage(response.currentPage || 1);
     } catch (e) {
       console.error('Error fetching repairs:', e);
       setRepairs([]);
@@ -292,6 +296,7 @@ const Repairs: React.FC = () => {
                 value={selectedVehicleId}
                 onChange={e => setSelectedVehicleId(e.target.value)}
               >
+                <option value="">차량 선택</option>
                 {vehicles.map(v => (
                   <option key={v._id} value={v._id}>
                     {v.vehicleId ? `${v.vehicleId}${v.model ? ` (${v.model})` : ''}` : v._id}
@@ -320,6 +325,7 @@ const Repairs: React.FC = () => {
           <thead>
             <tr>
               <th>수리일자</th>
+              <th>사용자</th>
               <th>차량번호</th>
               <th>정비소</th>
               <th>수리 유형</th>
@@ -332,6 +338,7 @@ const Repairs: React.FC = () => {
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <tr key={i} className="skeleton-row">
+                  <td><div className="skeleton-cell" style={{ width: `${70 + (i % 3) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${75 - (i % 3) * 5}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${70 + (i % 4) * 5}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${80 - (i % 3) * 8}%` }}></div></td>
@@ -345,6 +352,7 @@ const Repairs: React.FC = () => {
               currentItems.map(repair => (
                 <tr key={repair._id}>
                   <td>{formatDate(repair.repairedAt)}</td>
+                  <td>{repair.user?.name || '미상'}</td>
                   <td>{repair.vehicle?.vehicleId || '미상'}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>
@@ -359,7 +367,7 @@ const Repairs: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>
                   {tab === 'user' && (!selectedUserId || !selectedVehicleId)
                     ? '사용자와 차량을 선택하세요.'
                     : '수리 이력이 없습니다.'}

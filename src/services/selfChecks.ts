@@ -1,7 +1,7 @@
 import { fetchApi } from './api';
 
 export interface SelfCheck {
-  id: string;
+  _id: string;
   vehicleId: string;
   motorNoise: boolean;
   abnormalSpeed: boolean;
@@ -21,8 +21,16 @@ export interface SelfCheck {
   frameCrack: boolean;
   createdAt: string;
   updatedAt: string;
-  userName?: string;
-  vehicleCode?: string;
+  vehicle?: {
+    _id: string;
+    vehicleId: string;
+    model?: string;
+  };
+  user?: {
+    _id: string;
+    name: string;
+    phoneNumber: string;
+  };
 }
 
 export interface SelfChecksResponse {
@@ -58,6 +66,26 @@ export const selfCheckService = {
     return fetchApi(`/selfChecks?${queryParams.toString()}`);
   },
 
+  // Get all self checks for admin with pagination and filters
+  getAllSelfChecks: async (params?: SelfCheckFilters): Promise<SelfChecksResponse> => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== '') {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      
+      const response = await fetchApi(`/admin/selfChecks?${queryParams.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching all self checks:', error);
+      return { selfChecks: [], totalPages: 1, currentPage: 1, total: 0 };
+    }
+  },
+
   // Get a single self check by ID
   getSelfCheck: async (vehicleId: string, selfCheckId: string): Promise<SelfCheck> => {
     return fetchApi(`/vehicles/${vehicleId}/selfCheck/${selfCheckId}`);
@@ -66,7 +94,7 @@ export const selfCheckService = {
   // Get self checks for a specific vehicle
   getVehicleSelfChecks: async (vehicleId: string): Promise<SelfChecksResponse> => {
     try {
-      const response = await fetchApi(`/vehicles/${vehicleId}/selfCheck`);
+      const response = await fetchApi(`/admin/selfChecks?vehicleId=${vehicleId}`);
       // Handle both possible API response structures
       if (Array.isArray(response)) {
         return { selfChecks: response };

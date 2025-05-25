@@ -21,7 +21,7 @@ export const vehiclesService = {
   // Get vehicles for a user
   getVehiclesForUser: async (userId: string): Promise<VehiclesResponse> => {
     try {
-      const response = await fetchApi(`/vehicles?userId=${userId}`);
+      const response = await fetchApi(`/admin/vehicles/${userId}`);
       return Array.isArray(response) 
         ? { success: true, vehicles: response } 
         : response;

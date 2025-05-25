@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import MetricCard from '../components/features/dashboard/MetricCard';
 import { useUsers } from '../contexts/UserContext';
 import { User } from '../services/users';
+import { repairService } from '../services/repairs';
 import './Dashboard.css';
 
 // SVG Icons
@@ -66,6 +67,28 @@ const WarningIcon = () => (
 
 const Dashboard: React.FC = () => {
   const { users, loading, error, totalUsers } = useUsers();
+  const [totalRepairs, setTotalRepairs] = useState<number>(0);
+  const [recentRepairs, setRecentRepairs] = useState<number>(0);
+
+  useEffect(() => {
+    // Fetch total repairs
+    repairService.getAllRepairs({ page: 1, limit: 1 }).then(res => {
+      setTotalRepairs(res.total || 0);
+    });
+    // Fetch repairs in the last 7 days (inclusive)
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const startDate = weekAgo.toISOString().slice(0, 10);
+    const endDate = now.toISOString().slice(0, 10);
+    repairService.getAllRepairs({
+      page: 1,
+      limit: 1,
+      startDate,
+      endDate
+    }).then(res => {
+      setRecentRepairs(res.total || 0);
+    });
+  }, []);
 
   const getInactiveUsers = (users: User[]) => {
     return users.filter(user => user.role === 'user' && !user.updatedAt).length;
@@ -74,8 +97,8 @@ const Dashboard: React.FC = () => {
   // Calculate metrics based on users data
   const metrics = {
     totalUsers,
-    totalRepairs: 1254, // This should come from an API
-    recentRepairs: 27, // This should come from an API
+    totalRepairs,
+    recentRepairs,
     alertUsers: getInactiveUsers(users)
   };
 

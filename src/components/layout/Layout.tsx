@@ -35,7 +35,7 @@ const Layout: React.FC = () => {
               <NotificationIcon />
             </button>
             <div className="user-profile">
-              <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" />
+              <img src="https://cdn0.iconfinder.com/data/icons/remoji-soft-1/512/emoji-thumbs-up-smile.png" alt="User" />
               <span>관리자</span>
             </div>
           </div>

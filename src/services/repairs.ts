@@ -25,7 +25,16 @@ export interface Repair {
   status?: 'pending' | 'in_progress' | 'completed';
   createdAt: string;
   updatedAt: string;
-  vehicle?: any; // Vehicle information when populated
+  vehicle?: {
+    _id: string;
+    vehicleId: string;
+    model?: string;
+  };
+  user?: {
+    _id: string;
+    name: string;
+    phoneNumber: string;
+  };
 }
 
 export interface RepairCreateInput {
@@ -59,6 +68,10 @@ export interface RepairFilters {
   endDate?: string;
   repairStationCode?: string;
   isAccident?: boolean;
+  repairType?: string;
+  minAmount?: string;
+  maxAmount?: string;
+  vehicleId?: string;
 }
 
 export const repairService = {
@@ -84,6 +97,26 @@ export const repairService = {
     }
   },
 
+  // Get all repairs for admin with filters and pagination
+  getAllRepairs: async (params?: RepairFilters): Promise<RepairsResponse> => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== '') {
+            queryParams.append(key, value.toString());
+          }
+        });
+      }
+      
+      const response = await fetchApi(`/admin/repairs?${queryParams.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Error fetching all repairs:', error);
+      return { repairs: [], totalPages: 1, currentPage: 1, total: 0 };
+    }
+  },
+
   // Get a single repair by ID
   getRepair: async (vehicleId: string, repairId: string): Promise<Repair> => {
     return fetchApi(`/vehicles/${vehicleId}/repairs/${repairId}`);
@@ -92,7 +125,7 @@ export const repairService = {
   // Get repairs for a specific vehicle
   getVehicleRepairs: async (vehicleId: string): Promise<RepairsResponse> => {
     try {
-      const response = await fetchApi(`/vehicles/${vehicleId}/repairs`);
+      const response = await fetchApi(`/admin/repairs?vehicleId=${vehicleId}`);
       // Handle both possible API response structures
       if (Array.isArray(response)) {
         return { repairs: response };

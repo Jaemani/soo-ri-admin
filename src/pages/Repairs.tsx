@@ -96,6 +96,7 @@ const Repairs: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedRepair, setSelectedRepair] = useState<Repair | null>(null);
 
   // Fetch users for user selector
   useEffect(() => {
@@ -134,6 +135,10 @@ const Repairs: React.FC = () => {
   const fetchRepairs = async () => {
     setLoading(true);
     try {
+      // Add small initial delay to ensure loading state is applied in the UI
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const loadingStartTime = Date.now();
       let response;
       if (tab === 'user' && selectedVehicleId) {
         response = await repairService.getVehicleRepairs(selectedVehicleId);
@@ -170,6 +175,12 @@ const Repairs: React.FC = () => {
         setCurrentPage(1);
         setLoading(false);
         return;
+      }
+      
+      // Ensure loading state is shown for at least 800ms for better UX
+      const loadingTime = Date.now() - loadingStartTime;
+      if (loadingTime < 800) {
+        await new Promise(resolve => setTimeout(resolve, 800 - loadingTime));
       }
       
       setRepairs(response.repairs || []);
@@ -256,6 +267,14 @@ const Repairs: React.FC = () => {
     return categories.join(', ');
   };
 
+  const handleRepairDetailClick = (repair: Repair) => {
+    setSelectedRepair(repair);
+  };
+
+  const handleCloseRepairDetail = () => {
+    setSelectedRepair(null);
+  };
+
   return (
     <div className="repairs-page">
       <div className="page-header">
@@ -332,6 +351,7 @@ const Repairs: React.FC = () => {
               <th>수리 항목</th>
               <th>금액</th>
               <th>메모</th>
+              <th>상세보기</th>
             </tr>
           </thead>
           <tbody>
@@ -346,6 +366,7 @@ const Repairs: React.FC = () => {
                   <td><div className="skeleton-cell" style={{ width: `${65 - (i % 2) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${60 + (i % 5) * 8}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${40 + (i % 3) * 15}%` }}></div></td>
+                  <td><div className="skeleton-cell" style={{ width: `${50 + (i % 4) * 10}%` }}></div></td>
                 </tr>
               ))
             ) : currentItems.length > 0 ? (
@@ -363,6 +384,15 @@ const Repairs: React.FC = () => {
                   <td>{formatRepairCategories(repair.repairCategories)}</td>
                   <td>{repair.billingPrice.toLocaleString()}원</td>
                   <td>{repair.memo || '-'}</td>
+                  <td>
+                    <Button
+                      variant="primary"
+                      size="small"
+                      onClick={() => handleRepairDetailClick(repair)}
+                    >
+                      상세보기
+                    </Button>
+                  </td>
                 </tr>
               ))
             ) : (
@@ -400,6 +430,26 @@ const Repairs: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {selectedRepair && (
+        <Card style={{ marginTop: '1rem', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>수리 상세정보</h2>
+            <Button onClick={handleCloseRepairDetail} variant="secondary" size="small">닫기</Button>
+          </div>
+          <div className="repair-detail">
+            <div className="repair-detail-item"><span className="repair-detail-label">사용자</span><span className="repair-detail-value">{selectedRepair.user?.name || '미상'}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">차량번호</span><span className="repair-detail-value">{selectedRepair.vehicle?.vehicleId || '미상'}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">수리일자</span><span className="repair-detail-value">{formatDate(selectedRepair.repairedAt)}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">정비소</span><span className="repair-detail-value">{selectedRepair.repairStationLabel}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">수리 유형</span><span className="repair-detail-value">{selectedRepair.isAccident ? '사고' : '정기점검'}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">수리 항목</span><span className="repair-detail-value">{formatRepairCategories(selectedRepair.repairCategories)}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">금액</span><span className="repair-detail-value">{selectedRepair.billingPrice.toLocaleString()}원</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">메모</span><span className="repair-detail-value">{selectedRepair.memo || '-'}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">ID</span><span className="repair-detail-value">{selectedRepair._id}</span></div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

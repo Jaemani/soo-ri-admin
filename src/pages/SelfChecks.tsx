@@ -33,7 +33,7 @@ const SelfChecks: React.FC = () => {
 
   useEffect(() => {
     if (tab === 'user') {
-      fetchUsers();
+    fetchUsers();
     } else {
       fetchAllSelfChecks();
     }
@@ -42,7 +42,7 @@ const SelfChecks: React.FC = () => {
   // Filter selfChecks whenever relevant state changes
   useEffect(() => {
     if (tab === 'all') {
-      filterSelfChecks();
+    filterSelfChecks();
     }
   }, [allSelfChecks, search, dateRange]);
 
@@ -79,6 +79,10 @@ const SelfChecks: React.FC = () => {
   const fetchAllSelfChecks = async () => {
     try {
       setLoading(true);
+      // Add small initial delay to ensure loading state is applied in the UI
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const loadingStartTime = Date.now();
       const response = await selfCheckService.getAllSelfChecks({
         page: currentPage,
         limit: itemsPerPage,
@@ -86,6 +90,12 @@ const SelfChecks: React.FC = () => {
         endDate: dateRange.endDate,
         search
       });
+      
+      // Ensure loading state is shown for at least 800ms for better UX
+      const loadingTime = Date.now() - loadingStartTime;
+      if (loadingTime < 800) {
+        await new Promise(resolve => setTimeout(resolve, 800 - loadingTime));
+      }
       
       setAllSelfChecks(response.selfChecks || []);
       setTotalPages(response.totalPages || 1);
@@ -124,7 +134,17 @@ const SelfChecks: React.FC = () => {
   const fetchSelfChecksForVehicle = async (vehicleId: string) => {
     try {
       setLoading(true);
+      // Add small initial delay to ensure loading state is applied in the UI
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const loadingStartTime = Date.now();
       const response = await selfCheckService.getVehicleSelfChecks(vehicleId);
+      
+      // Ensure loading state is shown for at least 800ms for better UX
+      const loadingTime = Date.now() - loadingStartTime;
+      if (loadingTime < 800) {
+        await new Promise(resolve => setTimeout(resolve, 800 - loadingTime));
+      }
       
       const selfChecks = response.selfChecks || [];
       const selectedVehicleInfo = vehicles.find(v => v._id === vehicleId);
@@ -186,7 +206,7 @@ const SelfChecks: React.FC = () => {
     if (tab === 'all') {
       fetchAllSelfChecks();
     } else {
-      filterSelfChecks();
+    filterSelfChecks();
     }
   };
 
@@ -260,7 +280,7 @@ const SelfChecks: React.FC = () => {
           <p className="page-description">사용자가 제출한 자가진단 결과를 관리합니다.</p>
         </div>
       </div>
-
+      
       <div className="selfchecks-tabs">
         {TABS.map(t => (
           <button
@@ -274,42 +294,42 @@ const SelfChecks: React.FC = () => {
       </div>
       
       {tab === 'user' && (
-        <Card className="selfchecks-filter-card">
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-                사용자
-              </label>
-              <select 
-                className="selfchecks-search-input"
-                value={selectedUser}
-                onChange={handleUserChange}
-              >
-                <option value="">사용자 선택</option>
-                {users.map(user => (
-                  <option key={user._id} value={user._id}>{user.name}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-                차량
-              </label>
-              <select 
-                className="selfchecks-search-input"
-                value={selectedVehicle}
-                onChange={handleVehicleChange}
-                disabled={!selectedUser || vehicles.length === 0}
-              >
-                <option value="">차량 선택</option>
-                {vehicles.map(vehicle => (
-                  <option key={vehicle._id} value={vehicle._id}>
-                    {vehicle.vehicleId || vehicle._id}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <Card className="selfchecks-filter-card">
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
+              사용자
+            </label>
+            <select 
+              className="selfchecks-search-input"
+              value={selectedUser}
+              onChange={handleUserChange}
+            >
+              <option value="">사용자 선택</option>
+              {users.map(user => (
+                <option key={user._id} value={user._id}>{user.name}</option>
+              ))}
+            </select>
           </div>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
+              차량
+            </label>
+            <select 
+              className="selfchecks-search-input"
+              value={selectedVehicle}
+              onChange={handleVehicleChange}
+              disabled={!selectedUser || vehicles.length === 0}
+            >
+              <option value="">차량 선택</option>
+              {vehicles.map(vehicle => (
+                <option key={vehicle._id} value={vehicle._id}>
+                  {vehicle.vehicleId || vehicle._id}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         </Card>
       )}
 
@@ -365,7 +385,6 @@ const SelfChecks: React.FC = () => {
               <th>사용자</th>
               <th>차량번호</th>
               <th>점검결과</th>
-              <th>상세보기</th>
             </tr>
           </thead>
           <tbody>
@@ -376,7 +395,7 @@ const SelfChecks: React.FC = () => {
                   <td><div className="skeleton-cell" style={{ width: `${75 - (i % 3) * 5}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${70 + (i % 4) * 5}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${80 - (i % 3) * 8}%` }}></div></td>
-                  <td><div className="skeleton-cell" style={{ width: `${40 + (i % 3) * 15}%` }}></div></td>
+                  <td><div className="skeleton-cell" style={{ width: `60%` }}></div></td>
                 </tr>
               ))
             ) : !selectedUser && tab === 'user' ? (
@@ -431,7 +450,7 @@ const SelfChecks: React.FC = () => {
                     </td>
                     <td>
                       <Button
-                        variant="secondary"
+                        variant="primary"
                         size="small"
                         onClick={() => handleSelfCheckClick(selfCheck)}
                       >

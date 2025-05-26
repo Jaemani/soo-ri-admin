@@ -79,10 +79,6 @@ const SelfChecks: React.FC = () => {
   const fetchAllSelfChecks = async () => {
     try {
       setLoading(true);
-      // Add small initial delay to ensure loading state is applied in the UI
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const loadingStartTime = Date.now();
       const response = await selfCheckService.getAllSelfChecks({
         page: currentPage,
         limit: itemsPerPage,
@@ -90,12 +86,6 @@ const SelfChecks: React.FC = () => {
         endDate: dateRange.endDate,
         search
       });
-      
-      // Ensure loading state is shown for at least 800ms for better UX
-      const loadingTime = Date.now() - loadingStartTime;
-      if (loadingTime < 800) {
-        await new Promise(resolve => setTimeout(resolve, 800 - loadingTime));
-      }
       
       setAllSelfChecks(response.selfChecks || []);
       setTotalPages(response.totalPages || 1);
@@ -134,17 +124,7 @@ const SelfChecks: React.FC = () => {
   const fetchSelfChecksForVehicle = async (vehicleId: string) => {
     try {
       setLoading(true);
-      // Add small initial delay to ensure loading state is applied in the UI
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const loadingStartTime = Date.now();
       const response = await selfCheckService.getVehicleSelfChecks(vehicleId);
-      
-      // Ensure loading state is shown for at least 800ms for better UX
-      const loadingTime = Date.now() - loadingStartTime;
-      if (loadingTime < 800) {
-        await new Promise(resolve => setTimeout(resolve, 800 - loadingTime));
-      }
       
       const selfChecks = response.selfChecks || [];
       const selectedVehicleInfo = vehicles.find(v => v._id === vehicleId);

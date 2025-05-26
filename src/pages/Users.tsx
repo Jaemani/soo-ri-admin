@@ -29,13 +29,7 @@ const Users: React.FC = () => {
   const [editingUser, setEditingUser] = useState<EditableUser | null>(null);
 
   useEffect(() => {
-    // Force the skeleton loader to show briefly before fetching data
-    setLoading(true);
-    const timer = setTimeout(() => {
-      fetchAllUsers();
-    }, 500);
-    
-    return () => clearTimeout(timer);
+    fetchAllUsers();
   }, []);
 
   // Filter users whenever search term changes
@@ -46,17 +40,7 @@ const Users: React.FC = () => {
   const fetchAllUsers = async () => {
     try {
       setLoading(true);
-      // Add small initial delay to ensure loading state is applied in the UI
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const loadingStartTime = Date.now();
       const response = await userService.getUsers({ page: 1, limit: 1000 }); // Get all users at once
-      
-      // Ensure loading state is shown for at least 1200ms for better UX
-      const loadingTime = Date.now() - loadingStartTime;
-      if (loadingTime < 1200) {
-        await new Promise(resolve => setTimeout(resolve, 1200 - loadingTime));
-      }
       
       // Filter out guardian users (though backend should already do this)
       const nonGuardianUsers = response.users.filter(user => user.role !== 'guardian');

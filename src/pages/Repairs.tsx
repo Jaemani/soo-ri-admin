@@ -136,10 +136,6 @@ const Repairs: React.FC = () => {
   const fetchRepairs = async () => {
     setLoading(true);
     try {
-      // Add small initial delay to ensure loading state is applied in the UI
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const loadingStartTime = Date.now();
       let response;
       if (tab === 'user' && selectedVehicleId) {
         response = await repairService.getVehicleRepairs(selectedVehicleId);
@@ -176,12 +172,6 @@ const Repairs: React.FC = () => {
         setCurrentPage(1);
         setLoading(false);
         return;
-      }
-      
-      // Ensure loading state is shown for at least 800ms for better UX
-      const loadingTime = Date.now() - loadingStartTime;
-      if (loadingTime < 800) {
-        await new Promise(resolve => setTimeout(resolve, 800 - loadingTime));
       }
       
       setRepairs(response.repairs || []);

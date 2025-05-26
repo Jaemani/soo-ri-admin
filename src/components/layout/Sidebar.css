@@ -16,12 +16,13 @@
   justify-content: center;
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: white;
 }
 
 .sidebar-logo {
   max-width: 90%;
   height: auto;
-  max-height: 60px;
+  max-height: 100px;
   object-fit: contain;
 }
 

@@ -242,6 +242,14 @@ const SelfChecks: React.FC = () => {
     setDateRange(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFilterReset = () => {
+    setSearch('');
+    setDateRange({ startDate: '', endDate: '' });
+    if (tab === 'all') {
+      fetchAllSelfChecks();
+    }
+  };
+
   const handleSelfCheckClick = (selfCheck: SelfCheck) => {
     setSelectedSelfCheck(selfCheck);
   };
@@ -372,7 +380,7 @@ const SelfChecks: React.FC = () => {
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <Button type="submit" variant="primary" size="medium">검색</Button>
+            <Button type="button" variant="primary" size="medium" onClick={handleFilterReset}>필터초기화</Button>
           </div>
         </form>
       </Card>

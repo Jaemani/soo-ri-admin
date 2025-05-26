@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { repairService, Repair } from '../services/repairs';
 import { userService, User } from '../services/users';
 import { vehiclesService, Vehicle } from '../services/vehicles';
@@ -64,7 +64,8 @@ const filterOptions: FilterOption[] = [
   {
     name: 'maxAmount',
     label: '최대 금액',
-    type: 'number'
+    type: 'number',
+    placeholder: '300,000'
   }
 ];
 
@@ -330,16 +331,14 @@ const Repairs: React.FC = () => {
         </Card>
       )}
 
-      <Card className="repairs-filter-card">
-        <FilterPanel
-          filters={filters}
-          options={filterOptions}
-          onChange={handleFilterChange}
-          onReset={handleFilterReset}
-        />
-      </Card>
+      <FilterPanel
+        filters={filters}
+        options={filterOptions}
+        onChange={handleFilterChange}
+        onReset={handleFilterReset}
+      />
 
-      <Card className="repairs-table-card">
+      <Card className={`repairs-table-card ${loading ? 'loading' : ''}`}>
         <table className="repairs-table">
           <thead>
             <tr>
@@ -372,8 +371,12 @@ const Repairs: React.FC = () => {
             ) : currentItems.length > 0 ? (
               currentItems.map(repair => (
                 <tr key={repair._id}>
-                  <td>{formatDate(repair.repairedAt)}</td>
-                  <td>{repair.user?.name || '미상'}</td>
+                  <td style={{ animation: 'none !important', transition: 'none !important', transform: 'translateY(0px) !important', background: 'white !important' }}>
+                    <span className="no-animation">{formatDate(repair.repairedAt)}</span>
+                  </td>
+                  <td style={{ animation: 'none !important', transition: 'none !important', transform: 'translateY(0px) !important', background: 'white !important' }}>
+                    <span className="no-animation">{repair.user?.name || '미상'}</span>
+                  </td>
                   <td>{repair.vehicle?.vehicleId || '미상'}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>

@@ -25,8 +25,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   return (
     <div className="filter-panel">
       <div className="filter-grid">
-        {options.map((option) => (
-          <div key={option.name} className="filter-item">
+        {options.map((option) => {
+          let className = "filter-item";
+          if (option.name === 'minAmount') className += " amount-field min-amount";
+          if (option.name === 'maxAmount') className += " amount-field max-amount";
+          
+          return (
+          <div key={option.name} className={className}>
             <label htmlFor={option.name}>{option.label}</label>
             {option.type === 'select' ? (
               <select
@@ -53,10 +58,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               />
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
       <div className="filter-actions">
-        <button className="btn-secondary" onClick={onReset}>
+        <button className="btn btn-primary btn-medium" onClick={onReset}>
           필터 초기화
         </button>
       </div>

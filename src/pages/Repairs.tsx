@@ -371,12 +371,8 @@ const Repairs: React.FC = () => {
             ) : currentItems.length > 0 ? (
               currentItems.map(repair => (
                 <tr key={repair._id}>
-                  <td style={{ animation: 'none !important', transition: 'none !important', transform: 'translateY(0px) !important', background: 'white !important' }}>
-                    <span className="no-animation">{formatDate(repair.repairedAt)}</span>
-                  </td>
-                  <td style={{ animation: 'none !important', transition: 'none !important', transform: 'translateY(0px) !important', background: 'white !important' }}>
-                    <span className="no-animation">{repair.user?.name || '미상'}</span>
-                  </td>
+                  <td>{formatDate(repair.repairedAt)}</td>
+                  <td>{repair.user?.name || '미상'}</td>
                   <td>{repair.vehicle?.vehicleId || '미상'}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>

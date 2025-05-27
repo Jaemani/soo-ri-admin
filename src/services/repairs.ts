@@ -10,7 +10,8 @@ export interface RepairInput {
 }
 
 export interface Repair {
-  _id: string;
+  _id?: string;
+  id?: string; // api 에서 _id 대신 id라는 이름으로 response
   vehicleId: string;
   repairedAt: string;
   billingPrice: number;
@@ -125,7 +126,7 @@ export const repairService = {
   // Get repairs for a specific vehicle
   getVehicleRepairs: async (vehicleId: string): Promise<RepairsResponse> => {
     try {
-      const response = await fetchApi(`/admin/repairs?vehicleId=${vehicleId}`);
+      const response = await fetchApi(`/vehicles/${vehicleId}/repairs`);
       // Handle both possible API response structures
       if (Array.isArray(response)) {
         return { repairs: response };
@@ -175,18 +176,5 @@ export const repairService = {
       });
     }
     return fetchApi(`/repairs/stats?${queryParams.toString()}`);
-  },
-
-  // Get repairs for a vehicle
-  getRepairsForVehicle: async (vehicleId: string): Promise<RepairsResponse> => {
-    return fetchApi(`/repairs/${vehicleId}`);
-  },
-
-  // Add new repair(s) for a vehicle
-  addRepairs: async (vehicleId: string, repairs: RepairInput[]): Promise<RepairsResponse> => {
-    return fetchApi(`/repairs/${vehicleId}`, {
-      method: 'POST',
-      body: JSON.stringify(repairs),
-    });
-  },
+  }
 }; 

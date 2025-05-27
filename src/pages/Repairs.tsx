@@ -138,9 +138,13 @@ const Repairs: React.FC = () => {
     try {
       let response;
       if (tab === 'user' && selectedVehicleId) {
-        response = await repairService.getVehicleRepairs(selectedVehicleId);
-        // Enhance repairs with user and vehicle info
+        // Find the selected vehicle to get its vehicleId (human-readable ID)
         const selectedVehicleInfo = vehicles.find(v => v._id === selectedVehicleId);
+        if (!selectedVehicleInfo?.vehicleId) {
+          throw new Error('Vehicle ID not found');
+        }
+        response = await repairService.getVehicleRepairs(selectedVehicleInfo.vehicleId);
+        // Enhance repairs with user and vehicle info
         const selectedUserInfo = users.find(u => u._id === selectedUserId);
         
         response.repairs = response.repairs.map(repair => ({
@@ -360,7 +364,7 @@ const Repairs: React.FC = () => {
               ))
             ) : currentItems.length > 0 ? (
               currentItems.map(repair => (
-                <tr key={repair._id}>
+                <tr key={repair.id || repair._id}>
                   <td>{formatDate(repair.repairedAt)}</td>
                   <td>{repair.user?.name || '미상'}</td>
                   <td>{repair.vehicle?.vehicleId || '미상'}</td>
@@ -435,7 +439,7 @@ const Repairs: React.FC = () => {
             <div className="repair-detail-item"><span className="repair-detail-label">수리 항목</span><span className="repair-detail-value">{formatRepairCategories(selectedRepair.repairCategories)}</span></div>
             <div className="repair-detail-item"><span className="repair-detail-label">금액</span><span className="repair-detail-value">{selectedRepair.billingPrice.toLocaleString()}원</span></div>
             <div className="repair-detail-item"><span className="repair-detail-label">메모</span><span className="repair-detail-value">{selectedRepair.memo || '-'}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">ID</span><span className="repair-detail-value">{selectedRepair._id}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">ID</span><span className="repair-detail-value">{selectedRepair.id || selectedRepair._id}</span></div>
           </div>
         </Card>
       )}

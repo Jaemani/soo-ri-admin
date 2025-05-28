@@ -1,5 +1,6 @@
 import { Repair, DiagnosticReport } from '../types';
 import { User, UsersResponse } from './users';
+import { handleAuthFailure } from './auth';
 
 // Correctly using backticks for template literals to evaluate environment variables
 const API_BASE_URL = process.env.REACT_APP_API_URL || '';
@@ -41,9 +42,31 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     console.log('📡 Response status:', response.status);
     
     if (!response.ok) {
-      const error = await response.json();
-      console.error('❌ API Error Response:', error);
-      throw new ApiErrorImpl(error.message || '서버 오류가 발생했습니다.', response.status);
+      // Handle authentication failures
+      if (response.status === 401) {
+        console.error('❌ Authentication failed - redirecting to login');
+        handleAuthFailure();
+        throw new ApiErrorImpl('인증이 만료되었습니다. 다시 로그인해주세요.', response.status);
+      }
+      
+      // Handle forbidden access
+      if (response.status === 403) {
+        console.error('❌ Access forbidden');
+        throw new ApiErrorImpl('접근 권한이 없습니다.', response.status);
+      }
+      
+      // Try to get error message from response
+      let errorMessage = '서버 오류가 발생했습니다.';
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+      } catch (parseError) {
+        // If we can't parse the error response, use default message
+        console.warn('Could not parse error response:', parseError);
+      }
+      
+      console.error('❌ API Error Response:', errorMessage);
+      throw new ApiErrorImpl(errorMessage, response.status);
     }
 
     const data = await response.json();
@@ -51,10 +74,19 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     return data;
   } catch (error) {
     console.error('🔥 API Call Failed:', error);
+    
+    // If it's already our custom error, re-throw it
     if (error instanceof ApiErrorImpl) {
       throw error;
     }
-    throw new ApiErrorImpl('네트워크 오류가 발생했습니다.');
+    
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new ApiErrorImpl('네트워크 연결을 확인해주세요.');
+    }
+    
+    // Handle other errors
+    throw new ApiErrorImpl('알 수 없는 오류가 발생했습니다.');
   }
 };
 

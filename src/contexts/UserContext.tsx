@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UsersResponse } from '../services/users';
 import { userService } from '../services/users';
+import { ApiErrorImpl } from '../services/api';
 
 interface UserContextType {
   users: User[];
@@ -35,6 +36,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentPage(response.currentPage);
       setTotalPages(response.totalPages);
     } catch (err) {
+      if (err instanceof ApiErrorImpl && err.status === 401) {
+        console.log('Authentication failed, user will be redirected to login');
+        return;
+      }
       setError(err instanceof Error ? err.message : '사용자 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);

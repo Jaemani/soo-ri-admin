@@ -18,6 +18,17 @@ interface LoginCredentials {
 const USE_MOCK = false;
 const API_BASE_URL = `${process.env.REACT_APP_API_URL}/admin/login`;
 
+// Centralized function to handle authentication failures
+export const handleAuthFailure = () => {
+  // Clear all authentication data
+  localStorage.removeItem('token');
+  localStorage.removeItem('adminId');
+  localStorage.removeItem('stationLabel');
+  
+  // Redirect to login page
+  window.location.href = '/login';
+};
+
 export const login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
   if (USE_MOCK) {
     return mockLogin(credentials);
@@ -54,8 +65,25 @@ export const verifyToken = async (): Promise<boolean> => {
   return !!(token && adminId && stationLabel);
 };
 
+// Utility to check if user is authenticated
+export const isAuthenticated = (): boolean => {
+  const token = localStorage.getItem('token');
+  const adminId = localStorage.getItem('adminId');
+  const stationLabel = localStorage.getItem('stationLabel');
+  
+  return !!(token && adminId && stationLabel);
+};
+
+// Utility to get current admin info
+export const getCurrentAdmin = () => {
+  return {
+    id: localStorage.getItem('adminId'),
+    label: localStorage.getItem('stationLabel'),
+    token: localStorage.getItem('token')
+  };
+};
+
+// Utility to logout
 export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('adminId');
-  localStorage.removeItem('stationLabel');
+  handleAuthFailure();
 };

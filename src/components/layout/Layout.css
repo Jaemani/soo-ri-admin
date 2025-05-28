@@ -63,6 +63,25 @@
   color: #5a6777;
 }
 
+.logout-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #5a6777;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-button:hover {
+  background-color: #f0f2f5;
+  color: #e03131;
+}
+
 .user-profile {
   display: flex;
   align-items: center;

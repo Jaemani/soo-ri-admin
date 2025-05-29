@@ -49,6 +49,7 @@ export interface SelfCheckFilters {
   startDate?: string;
   endDate?: string;
   search?: string;
+  checkResultSearch?: string;
   hasIssues?: boolean;
 }
 

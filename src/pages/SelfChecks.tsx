@@ -1,80 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { selfCheckService, SelfCheck } from '../services/selfChecks';
-import { userService, User } from '../services/users';
-import { vehiclesService, Vehicle } from '../services/vehicles';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import './SelfChecks.css';
 
-const TABS = [
-  { key: 'all', label: '전체 자가진단' },
-  { key: 'user', label: '선택한 사용자 자가진단' }
-];
-
 const SelfChecks: React.FC = () => {
-  const [tab, setTab] = useState<'all' | 'user'>('all');
   const [allSelfChecks, setAllSelfChecks] = useState<SelfCheck[]>([]);
-  const [filteredSelfChecks, setFilteredSelfChecks] = useState<SelfCheck[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
+  const [checkResultSearch, setCheckResultSearch] = useState('');
   const [itemsPerPage] = useState(10);
   const [selectedSelfCheck, setSelectedSelfCheck] = useState<SelfCheck | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>('');
-  const [selectedVehicle, setSelectedVehicle] = useState<string>('');
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: ''
   });
 
   useEffect(() => {
-    if (tab === 'user') {
-    fetchUsers();
-    } else {
-      fetchAllSelfChecks();
-    }
-  }, [tab]);
+    fetchAllSelfChecks();
+  }, []);
 
-  // Filter selfChecks whenever relevant state changes
+  // Fetch self checks when page changes (server-side pagination)
   useEffect(() => {
-    if (tab === 'all') {
-    filterSelfChecks();
-    }
-  }, [allSelfChecks, search, dateRange]);
-
-  // Fetch vehicles when user is selected
-  useEffect(() => {
-    if (selectedUser) {
-      fetchVehiclesForUser(selectedUser);
-    } else {
-      setVehicles([]);
-      setSelectedVehicle('');
-      setAllSelfChecks([]);
-    }
-  }, [selectedUser]);
-
-  // Fetch self checks when vehicle is selected
-  useEffect(() => {
-    if (selectedVehicle) {
-      fetchSelfChecksForVehicle(selectedVehicle);
-    } else {
-      setAllSelfChecks([]);
-    }
-  }, [selectedVehicle]);
-
-  const fetchUsers = async () => {
-    try {
-      const response = await userService.getUsers({ page: 1, limit: 1000 });
-      setUsers(response.users);
-    } catch (err) {
-      console.error('Error fetching users:', err);
-      setError('사용자 데이터를 불러오는데 실패했습니다.');
-    }
-  };
+    fetchAllSelfChecks();
+  }, [currentPage]);
 
   const fetchAllSelfChecks = async () => {
     try {
@@ -84,7 +36,8 @@ const SelfChecks: React.FC = () => {
         limit: itemsPerPage,
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
-        search
+        search,
+        checkResultSearch
       });
       
       setAllSelfChecks(response.selfChecks || []);
@@ -100,121 +53,10 @@ const SelfChecks: React.FC = () => {
     }
   };
 
-  const fetchVehiclesForUser = async (userId: string) => {
-    try {
-      if (!userId) {
-        setVehicles([]);
-        setSelectedVehicle('');
-        return;
-      }
-      
-      setLoading(true);
-      const response = await vehiclesService.getVehiclesForUser(userId);
-      setVehicles(response.vehicles);
-      setSelectedVehicle('');
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching vehicles:', err);
-      setVehicles([]);
-      setError('차량 데이터를 불러오는데 실패했습니다.');
-      setLoading(false);
-    }
-  };
-
-  const fetchSelfChecksForVehicle = async (vehicleId: string) => {
-    try {
-      setLoading(true);
-      const response = await selfCheckService.getVehicleSelfChecks(vehicleId);
-      
-      const selfChecks = response.selfChecks || [];
-      const selectedVehicleInfo = vehicles.find(v => v._id === vehicleId);
-      const selectedUserInfo = users.find(u => u._id === selectedUser);
-      
-      const enhancedSelfChecks = selfChecks.map(check => ({
-        ...check,
-        vehicle: selectedVehicleInfo ? {
-          _id: selectedVehicleInfo._id,
-          vehicleId: selectedVehicleInfo.vehicleId
-        } : undefined,
-        user: selectedUserInfo ? {
-          _id: selectedUserInfo._id,
-          name: selectedUserInfo.name,
-          phoneNumber: selectedUserInfo.phoneNumber
-        } : undefined
-      }));
-      
-      setAllSelfChecks(enhancedSelfChecks);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching self checks:', err);
-      setError('자가진단 데이터를 불러오는데 실패했습니다.');
-      setAllSelfChecks([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Client-side filtering function
-  const filterSelfChecks = () => {
-    let filtered = [...allSelfChecks];
-    
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(selfCheck => 
-        (selfCheck.user?.name && selfCheck.user.name.toLowerCase().includes(searchLower)) ||
-        (selfCheck.vehicle?.vehicleId && selfCheck.vehicle.vehicleId.toLowerCase().includes(searchLower))
-      );
-    }
-
-    if (dateRange.startDate) {
-      filtered = filtered.filter(selfCheck => 
-        new Date(selfCheck.createdAt) >= new Date(dateRange.startDate)
-      );
-    }
-
-    if (dateRange.endDate) {
-      filtered = filtered.filter(selfCheck => 
-        new Date(selfCheck.createdAt) <= new Date(dateRange.endDate + 'T23:59:59')
-      );
-    }
-    
-    setFilteredSelfChecks(filtered);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (tab === 'all') {
-      fetchAllSelfChecks();
-    } else {
-    filterSelfChecks();
-    }
-  };
-
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      if (tab === 'all') {
-        fetchAllSelfChecks();
-      }
     }
-  };
-
-  const handleTabChange = (newTab: 'all' | 'user') => {
-    setTab(newTab);
-    setSearch('');
-    setDateRange({ startDate: '', endDate: '' });
-    setSelectedUser('');
-    setSelectedVehicle('');
-    setCurrentPage(1);
-  };
-
-  const handleUserChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const userId = e.target.value;
-    setSelectedUser(userId);
-  };
-
-  const handleVehicleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedVehicle(e.target.value);
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -224,10 +66,27 @@ const SelfChecks: React.FC = () => {
 
   const handleFilterReset = () => {
     setSearch('');
+    setCheckResultSearch('');
     setDateRange({ startDate: '', endDate: '' });
-    if (tab === 'all') {
-      fetchAllSelfChecks();
-    }
+    setCurrentPage(1);
+    // Fetch unfiltered results
+    selfCheckService.getAllSelfChecks({
+      page: 1,
+      limit: itemsPerPage,
+      startDate: '',
+      endDate: '',
+      search: '',
+      checkResultSearch: ''
+    }).then(response => {
+      setAllSelfChecks(response.selfChecks || []);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(1);
+      setError(null);
+    }).catch(err => {
+      console.error('Error fetching all self checks:', err);
+      setError('자가진단 데이터를 불러오는데 실패했습니다.');
+      setAllSelfChecks([]);
+    });
   };
 
   const handleSelfCheckClick = (selfCheck: SelfCheck) => {
@@ -239,9 +98,8 @@ const SelfChecks: React.FC = () => {
   };
 
   // Get current page of selfChecks
-  const indexOfLastSelfCheck = currentPage * itemsPerPage;
-  const indexOfFirstSelfCheck = indexOfLastSelfCheck - itemsPerPage;
-  const currentSelfChecks = filteredSelfChecks.slice(indexOfFirstSelfCheck, indexOfLastSelfCheck);
+  const displayData = allSelfChecks;
+  const currentSelfChecks = displayData;
 
   // Format the date for display
   const formatDate = (dateString: string) => {
@@ -269,60 +127,32 @@ const SelfChecks: React.FC = () => {
         </div>
       </div>
       
-      <div className="selfchecks-tabs">
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            className={`selfchecks-tab-btn${tab === t.key ? ' active' : ''}`}
-            onClick={() => handleTabChange(t.key as 'all' | 'user')}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      
-      {tab === 'user' && (
       <Card className="selfchecks-filter-card">
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-          <div style={{ flex: 1 }}>
+        <div className="selfchecks-filter-form">
+          <div style={{ flex: 2 }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              사용자
+              검색어
             </label>
-            <select 
+            <input
               className="selfchecks-search-input"
-              value={selectedUser}
-              onChange={handleUserChange}
-            >
-              <option value="">사용자 선택</option>
-              {users.map(user => (
-                <option key={user._id} value={user._id}>{user.name}</option>
-              ))}
-            </select>
+              type="text"
+              placeholder="사용자명, 차량번호 검색"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 2 }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              차량
+              점검결과 검색
             </label>
-            <select 
+            <input
               className="selfchecks-search-input"
-              value={selectedVehicle}
-              onChange={handleVehicleChange}
-              disabled={!selectedUser || vehicles.length === 0}
-            >
-              <option value="">차량 선택</option>
-              {vehicles.map(vehicle => (
-                <option key={vehicle._id} value={vehicle._id}>
-                  {vehicle.vehicleId || vehicle._id}
-                </option>
-              ))}
-            </select>
+              type="text"
+              placeholder="점검 항목 검색"
+              value={checkResultSearch}
+              onChange={e => setCheckResultSearch(e.target.value)}
+            />
           </div>
-        </div>
-        </Card>
-      )}
-
-      <Card className="selfchecks-filter-card">
-        <form className="selfchecks-filter-form" onSubmit={handleSearch}>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
               시작일
@@ -347,22 +177,11 @@ const SelfChecks: React.FC = () => {
               className="selfchecks-search-input"
             />
           </div>
-          <div style={{ flex: 2 }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              검색어
-            </label>
-            <input
-              className="selfchecks-search-input"
-              type="text"
-              placeholder="사용자 이름, 차량번호 입력"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
             <Button type="button" variant="primary" size="medium" onClick={handleFilterReset}>필터초기화</Button>
+            <Button type="button" variant="primary" size="medium" onClick={fetchAllSelfChecks}>검색</Button>
           </div>
-        </form>
+        </div>
       </Card>
       
       <Card className="selfchecks-table-card">
@@ -386,18 +205,6 @@ const SelfChecks: React.FC = () => {
                   <td><div className="skeleton-cell" style={{ width: `60%` }}></div></td>
                 </tr>
               ))
-            ) : !selectedUser && tab === 'user' ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: 'center', color: '#888', padding: '2rem' }}>
-                  사용자를 선택해주세요.
-                </td>
-              </tr>
-            ) : !selectedVehicle && tab === 'user' ? (
-              <tr>
-                <td colSpan={5} style={{ textAlign: 'center', color: '#888', padding: '2rem' }}>
-                  {vehicles.length > 0 ? '차량을 선택해주세요.' : '등록된 차량이 없습니다.'}
-                </td>
-              </tr>
             ) : currentSelfChecks.length > 0 ? (
               currentSelfChecks.map(selfCheck => {
                 // Determine troubled parts
@@ -457,7 +264,7 @@ const SelfChecks: React.FC = () => {
             )}
           </tbody>
         </table>
-        {!loading && filteredSelfChecks.length > 0 && totalPages > 1 && (
+        {!loading && displayData.length > 0 && totalPages > 1 && (
           <div className="selfchecks-pagination">
             <Button 
               onClick={() => handlePageChange(currentPage - 1)}

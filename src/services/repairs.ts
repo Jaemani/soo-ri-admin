@@ -73,6 +73,8 @@ export interface RepairFilters {
   minAmount?: string;
   maxAmount?: string;
   vehicleId?: string;
+  searchTerm?: string;
+  repairTypeSearch?: string;
 }
 
 export const repairService = {

@@ -18,8 +18,7 @@ interface EditableUser extends User {
 }
 
 const Users: React.FC = () => {
-  const [allUsers, setAllUsers] = useState<EditableUser[]>([]); // All users from API
-  const [filteredUsers, setFilteredUsers] = useState<EditableUser[]>([]); // Filtered users for display
+  const [allUsers, setAllUsers] = useState<EditableUser[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,61 +28,65 @@ const Users: React.FC = () => {
   const [editingUser, setEditingUser] = useState<EditableUser | null>(null);
 
   useEffect(() => {
-    fetchAllUsers();
+    fetchUsers();
   }, []);
 
-  // Filter users whenever search term changes
+  // Fetch users when page changes (server-side pagination)
   useEffect(() => {
-    filterUsers();
-  }, [search, allUsers]);
+    fetchUsers();
+  }, [currentPage]);
 
-  const fetchAllUsers = async () => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await userService.getUsers({ page: 1, limit: 1000 }); // Get all users at once
-      
-      // Filter out guardian users (though backend should already do this)
-      const nonGuardianUsers = response.users.filter(user => user.role !== 'guardian');
+      const response = await userService.getUsers({ 
+        page: currentPage, 
+        limit: itemsPerPage,
+        search: search
+      });
       
       // Ensure each user has guardians property
-      const usersWithGuardians = nonGuardianUsers.map(user => ({
+      const usersWithGuardians = response.users.map(user => ({
         ...user,
         guardians: user.guardians || []
       }));
       
       setAllUsers(usersWithGuardians);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(response.currentPage || 1);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '사용자 데이터를 불러오는데 실패했습니다.');
+      setAllUsers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Client-side filtering function (similar to Repairs page)
-  const filterUsers = () => {
-    let filtered = [...allUsers];
-    
-    if (search.trim()) {
-      const searchLower = search.toLowerCase();
-      filtered = filtered.filter(user => 
-        user.name.toLowerCase().includes(searchLower) ||
-        user.phoneNumber.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    setFilteredUsers(filtered);
-    updatePagination(filtered);
-  };
-  
-  const updatePagination = (filtered: User[]) => {
-    setTotalPages(Math.ceil(filtered.length / itemsPerPage) || 1);
-    setCurrentPage(1); // Reset to first page when filtering
+  const handleFilterReset = () => {
+    setSearch('');
+    setCurrentPage(1);
+    // Fetch unfiltered results
+    userService.getUsers({ 
+      page: 1, 
+      limit: itemsPerPage,
+      search: ''
+    }).then(response => {
+      const usersWithGuardians = response.users.map(user => ({
+        ...user,
+        guardians: user.guardians || []
+      }));
+      setAllUsers(usersWithGuardians);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(1);
+    }).catch(err => {
+      setError(err instanceof Error ? err.message : '사용자 데이터를 불러오는데 실패했습니다.');
+    });
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    filterUsers();
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchUsers();
   };
 
   const handlePageChange = (newPage: number) => {
@@ -109,12 +112,6 @@ const Users: React.FC = () => {
       u._id === user._id ? { ...u, isEditing: true } : u
     );
     setAllUsers(updatedUsers);
-    
-    // Also update filteredUsers
-    const updatedFilteredUsers = filteredUsers.map(u =>
-      u._id === user._id ? { ...u, isEditing: true } : u
-    );
-    setFilteredUsers(updatedFilteredUsers);
   };
 
   const handleCancelEdit = () => {
@@ -123,10 +120,6 @@ const Users: React.FC = () => {
     // Update the allUsers array to clear editing state
     const updatedUsers = allUsers.map(u => ({ ...u, isEditing: false }));
     setAllUsers(updatedUsers);
-    
-    // Also update filteredUsers
-    const updatedFilteredUsers = filteredUsers.map(u => ({ ...u, isEditing: false }));
-    setFilteredUsers(updatedFilteredUsers);
   };
 
   const handleInputChange = (field: keyof User, value: string | boolean) => {
@@ -170,18 +163,13 @@ const Users: React.FC = () => {
       setEditingUser(null);
       
       // Refresh the data to get the updated guardians
-      await fetchAllUsers();
+      await fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : '사용자 업데이트에 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
-
-  // Get current page of users
-  const indexOfLastUser = currentPage * itemsPerPage;
-  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   // Render user row based on edit state
   const renderUserRow = (user: EditableUser) => {
@@ -327,7 +315,7 @@ const Users: React.FC = () => {
       </div>
       
       <Card className="users-filter-card">
-        <form className="users-filter-form" onSubmit={handleSearch}>
+        <div className="users-filter-form">
           <input
             className="users-search-input"
             type="text"
@@ -335,8 +323,11 @@ const Users: React.FC = () => {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <Button type="submit" variant="primary" size="medium">검색</Button>
-        </form>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button type="button" variant="primary" size="medium" onClick={handleFilterReset}>필터초기화</Button>
+            <Button type="button" variant="primary" size="medium" onClick={handleSearch}>검색</Button>
+          </div>
+        </div>
       </Card>
       <Card className="users-table-card">
         <table className="users-table">
@@ -362,8 +353,8 @@ const Users: React.FC = () => {
                   <td><div className="skeleton-cell" style={{ width: `${50 + (i % 5) * 8}%` }}></div></td>
                 </tr>
               ))
-            ) : currentUsers.length > 0 ? (
-              currentUsers.map(user => renderUserRow(user))
+            ) : allUsers.length > 0 ? (
+              allUsers.map(user => renderUserRow(user))
             ) : (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', color: '#888', padding: '2rem' }}>

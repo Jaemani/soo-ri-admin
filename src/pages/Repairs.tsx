@@ -10,6 +10,7 @@ import './Repairs.css';
 
 interface FilterState {
   searchTerm: string;
+  repairTypeSearch: string;
   startDate: string;
   endDate: string;
   repairType: string;
@@ -21,6 +22,7 @@ interface FilterState {
 
 const initialFilter: FilterState = {
   searchTerm: '',
+  repairTypeSearch: '',
   startDate: '',
   endDate: '',
   repairType: '',
@@ -28,51 +30,6 @@ const initialFilter: FilterState = {
   minAmount: '',
   maxAmount: ''
 };
-
-const filterOptions: FilterOption[] = [
-  {
-    name: 'searchTerm',
-    label: '검색어',
-    type: 'text',
-    placeholder: '차량번호, 정비소, 내용 검색'
-  },
-  {
-    name: 'startDate',
-    label: '시작일',
-    type: 'date'
-  },
-  {
-    name: 'endDate',
-    label: '종료일',
-    type: 'date'
-  },
-  {
-    name: 'repairType',
-    label: '수리 유형',
-    type: 'select',
-    options: [
-      { value: 'accident', label: '사고' },
-      { value: 'regular', label: '정기점검' }
-    ]
-  },
-  {
-    name: 'minAmount',
-    label: '최소 금액',
-    type: 'number',
-    placeholder: '0'
-  },
-  {
-    name: 'maxAmount',
-    label: '최대 금액',
-    type: 'number',
-    placeholder: '300,000'
-  }
-];
-
-const TABS = [
-  { key: 'all', label: '전체 수리이력' },
-  { key: 'user', label: '선택한 사용자 수리이력' }
-];
 
 // Function to format date
 const formatDate = (dateString: string) => {
@@ -85,11 +42,7 @@ const formatDate = (dateString: string) => {
 };
 
 const Repairs: React.FC = () => {
-  const [tab, setTab] = useState<'user' | 'all'>('all');
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [selectedVehicleId, setSelectedVehicleId] = useState('');
   const [repairs, setRepairs] = useState<Repair[]>([]);
   const [filteredRepairs, setFilteredRepairs] = useState<Repair[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,161 +52,81 @@ const Repairs: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedRepair, setSelectedRepair] = useState<Repair | null>(null);
 
-  // Fetch users for user selector
+  // Fetch users on component mount
   useEffect(() => {
-    if (tab === 'user') {
-      userService.getUsers({ page: 1, limit: 100 }).then(res => setUsers(res.users));
-    }
-  }, [tab]);
+    userService.getUsers({ page: 1, limit: 100 }).then(res => setUsers(res.users));
+    fetchRepairs();
+  }, []);
 
-  // Fetch vehicles for selected user
+  // Fetch repairs when page changes (server-side pagination)
   useEffect(() => {
-    if (tab === 'user' && selectedUserId) {
-      setVehicles([]);
-      setSelectedVehicleId('');
-      vehiclesService.getVehiclesForUser(selectedUserId).then(res => {
-        setVehicles(res.vehicles);
-      });
-    } else {
-      setVehicles([]);
-      setSelectedVehicleId('');
-    }
-  }, [tab, selectedUserId]);
-
-  // Fetch repairs
-  useEffect(() => {
-    if (tab === 'all') {
-      fetchRepairs();
-    } else if (tab === 'user' && selectedVehicleId) {
-      fetchRepairs();
-    }
-  }, [tab, selectedVehicleId]);
-
-  useEffect(() => {
-    filterRepairs();
-  }, [repairs, filters]);
+    fetchRepairs();
+  }, [currentPage]);
 
   const fetchRepairs = async () => {
     setLoading(true);
     try {
-      let response;
-      if (tab === 'user' && selectedVehicleId) {
-        // Find the selected vehicle to get its vehicleId (human-readable ID)
-        const selectedVehicleInfo = vehicles.find(v => v._id === selectedVehicleId);
-        if (!selectedVehicleInfo?.vehicleId) {
-          throw new Error('Vehicle ID not found');
-        }
-        response = await repairService.getVehicleRepairs(selectedVehicleInfo.vehicleId);
-        // Enhance repairs with user and vehicle info
-        const selectedUserInfo = users.find(u => u._id === selectedUserId);
-        
-        response.repairs = response.repairs.map(repair => ({
-          ...repair,
-          vehicle: selectedVehicleInfo ? {
-            _id: selectedVehicleInfo._id,
-            vehicleId: selectedVehicleInfo.vehicleId
-          } : undefined,
-          user: selectedUserInfo ? {
-            _id: selectedUserInfo._id,
-            name: selectedUserInfo.name,
-            phoneNumber: selectedUserInfo.phoneNumber
-          } : undefined
-        }));
-      } else if (tab === 'all') {
-        response = await repairService.getAllRepairs({
-          page: currentPage,
-          limit: itemsPerPage,
-          startDate: filters.startDate,
-          endDate: filters.endDate,
-          repairType: filters.repairType,
-          repairStationCode: filters.repairStationCode,
-          minAmount: filters.minAmount,
-          maxAmount: filters.maxAmount
-        });
-      } else {
-        setRepairs([]);
-        setTotalPages(1);
-        setCurrentPage(1);
-        setLoading(false);
-        return;
-      }
+      const response = await repairService.getAllRepairs({
+        page: currentPage,
+        limit: itemsPerPage,
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        repairType: filters.repairType,
+        repairStationCode: filters.repairStationCode,
+        minAmount: filters.minAmount,
+        maxAmount: filters.maxAmount,
+        searchTerm: filters.searchTerm,
+        repairTypeSearch: filters.repairTypeSearch
+      });
       
       setRepairs(response.repairs || []);
+      setFilteredRepairs(response.repairs || []);
       setTotalPages(response.totalPages || 1);
       setCurrentPage(response.currentPage || 1);
     } catch (e) {
       console.error('Error fetching repairs:', e);
       setRepairs([]);
+      setFilteredRepairs([]);
       setTotalPages(1);
     } finally {
       setLoading(false);
     }
   };
 
-  const filterRepairs = () => {
-    let filtered = [...repairs];
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(repair => {
-        const vehicleId = repair.vehicle?.vehicleId || repair.vehicleId;
-        return (
-          (vehicleId && vehicleId.toString().toLowerCase().includes(searchLower)) ||
-          (repair.repairStationLabel && repair.repairStationLabel.toLowerCase().includes(searchLower)) ||
-          (repair.memo && repair.memo.toLowerCase().includes(searchLower)) ||
-          (repair.repairCategories && repair.repairCategories.some(c => c.toLowerCase().includes(searchLower)))
-        );
-      });
-    }
-    if (filters.startDate) {
-      filtered = filtered.filter(repair => 
-        new Date(repair.repairedAt) >= new Date(filters.startDate)
-      );
-    }
-    if (filters.endDate) {
-      filtered = filtered.filter(repair => 
-        new Date(repair.repairedAt) <= new Date(filters.endDate)
-      );
-    }
-    if (filters.repairType) {
-      filtered = filtered.filter(repair => 
-        repair.isAccident === (filters.repairType === 'accident')
-      );
-    }
-    if (filters.repairStationCode) {
-      filtered = filtered.filter(repair => 
-        repair.repairStationCode === filters.repairStationCode
-      );
-    }
-    if (filters.minAmount) {
-      filtered = filtered.filter(repair => 
-        repair.billingPrice >= parseInt(filters.minAmount)
-      );
-    }
-    if (filters.maxAmount) {
-      filtered = filtered.filter(repair => 
-        repair.billingPrice <= parseInt(filters.maxAmount)
-      );
-    }
-    setFilteredRepairs(filtered);
-    setCurrentPage(1);
-  };
-
-  // Pagination
-  const totalFilteredPages = Math.ceil(filteredRepairs.length / itemsPerPage) || 1;
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredRepairs.slice(indexOfFirstItem, indexOfLastItem);
+  // Pagination - using server-side pagination
+  const currentItems = filteredRepairs;
 
   const handleFilterChange = (name: string, value: string) => {
     setFilters(prev => ({ ...prev, [name]: value }));
+    setCurrentPage(1); // Reset to first page when filter changes
   };
-  const handleFilterReset = () => setFilters(initialFilter);
-
-  const handleTabChange = (newTab: 'user' | 'all') => {
-    setTab(newTab);
+  
+  const handleFilterReset = () => {
     setFilters(initialFilter);
-    setSelectedUserId('');
-    setSelectedVehicleId('');
+    setCurrentPage(1);
+    // Fetch unfiltered results
+    repairService.getAllRepairs({
+      page: 1,
+      limit: itemsPerPage,
+      startDate: '',
+      endDate: '',
+      repairType: '',
+      repairStationCode: '',
+      minAmount: '',
+      maxAmount: '',
+      searchTerm: '',
+      repairTypeSearch: ''
+    }).then(response => {
+      setRepairs(response.repairs || []);
+      setFilteredRepairs(response.repairs || []);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(1);
+    }).catch(e => {
+      console.error('Error fetching repairs:', e);
+      setRepairs([]);
+      setFilteredRepairs([]);
+      setTotalPages(1);
+    });
   };
 
   // Format repair categories
@@ -270,6 +143,54 @@ const Repairs: React.FC = () => {
     setSelectedRepair(null);
   };
 
+  // Create dynamic filter options including users and vehicles
+  const filterOptions: FilterOption[] = [
+    {
+      name: 'searchTerm',
+      label: '검색어',
+      type: 'text',
+      placeholder: '사용자명, 차량번호 검색'
+    },
+    {
+      name: 'repairTypeSearch',
+      label: '수리 내용 검색',
+      type: 'text',
+      placeholder: '수리 유형(사고/정기점검), 수리 항목 검색'
+    },
+    {
+      name: 'startDate',
+      label: '시작일',
+      type: 'date'
+    },
+    {
+      name: 'endDate',
+      label: '종료일',
+      type: 'date'
+    },
+    {
+      name: 'repairType',
+      label: '수리 유형',
+      type: 'select',
+      options: [
+        { value: '', label: '전체' },
+        { value: 'accident', label: '사고' },
+        { value: 'regular', label: '정기점검' }
+      ]
+    },
+    {
+      name: 'minAmount',
+      label: '최소 금액',
+      type: 'number',
+      placeholder: '0'
+    },
+    {
+      name: 'maxAmount',
+      label: '최대 금액',
+      type: 'number',
+      placeholder: '300,000'
+    }
+  ];
+
   return (
     <div className="repairs-page">
       <div className="page-header">
@@ -279,57 +200,12 @@ const Repairs: React.FC = () => {
         </div>
       </div>
       
-      <div className="repairs-tabs">
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            className={`repairs-tab-btn${tab === t.key ? ' active' : ''}`}
-            onClick={() => handleTabChange(t.key as 'user' | 'all')}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'user' && (
-        <Card className="repairs-user-selector-card">
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <select
-              className="repairs-user-selector"
-              value={selectedUserId}
-              onChange={e => setSelectedUserId(e.target.value)}
-            >
-              <option value="">사용자 선택</option>
-              {users.map(u => (
-                <option key={u._id} value={u._id}>{u.name} ({u.phoneNumber})</option>
-              ))}
-            </select>
-            {vehicles.length > 0 && (
-              <select
-                className="repairs-vehicle-selector"
-                value={selectedVehicleId}
-                onChange={e => setSelectedVehicleId(e.target.value)}
-              >
-                <option value="">차량 선택</option>
-                {vehicles.map(v => (
-                  <option key={v._id} value={v._id}>
-                    {v.vehicleId ? `${v.vehicleId}${v.model ? ` (${v.model})` : ''}` : v._id}
-                  </option>
-                ))}
-              </select>
-            )}
-            {selectedUserId && vehicles.length === 0 && (
-              <span style={{ color: 'var(--gray-600)' }}>등록된 차량이 없습니다.</span>
-            )}
-          </div>
-        </Card>
-      )}
-
       <FilterPanel
         filters={filters}
         options={filterOptions}
         onChange={handleFilterChange}
         onReset={handleFilterReset}
+        onSearch={fetchRepairs}
       />
 
       <Card className={`repairs-table-card ${loading ? 'loading' : ''}`}>
@@ -390,16 +266,14 @@ const Repairs: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>
-                  {tab === 'user' && (!selectedUserId || !selectedVehicleId)
-                    ? '사용자와 차량을 선택하세요.'
-                    : '수리 이력이 없습니다.'}
+                <td colSpan={9} style={{ textAlign: 'center', padding: '2rem' }}>
+                  수리 이력이 없습니다.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-        {!loading && totalFilteredPages > 1 && (
+        {!loading && totalPages > 1 && (
           <div className="repairs-pagination">
             <Button 
               onClick={() => setCurrentPage(currentPage - 1)}
@@ -410,11 +284,11 @@ const Repairs: React.FC = () => {
               이전
             </Button>
             <span className="repairs-pagination-info">
-              {currentPage} / {totalFilteredPages}
+              {currentPage} / {totalPages}
             </span>
             <Button 
               onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalFilteredPages}
+              disabled={currentPage === totalPages}
               variant="secondary"
               size="small"
             >

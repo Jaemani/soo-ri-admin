@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { userService, User as BaseUser } from '../services/users';
+import { aidCalculationService, UserAidInfo } from '../services/aidCalculation';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import './Users.css';
@@ -19,74 +20,91 @@ interface EditableUser extends User {
 
 const Users: React.FC = () => {
   const [allUsers, setAllUsers] = useState<EditableUser[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [userAidInfo, setUserAidInfo] = useState<{ [userId: string]: UserAidInfo }>({});
   const [loading, setLoading] = useState(false);
+  const [aidCalculating, setAidCalculating] = useState(false);
+  const [aidProgress, setAidProgress] = useState('');
+  const [search, setSearch] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<EditableUser | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState('');
   const [itemsPerPage] = useState(10);
-  const [editingUser, setEditingUser] = useState<EditableUser | null>(null);
+  
+  // Ref to track if aid calculation is in progress (prevents StrictMode double calls)
+  const aidCalculationInProgress = useRef(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  // Fetch users when page changes (server-side pagination)
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage]);
-
-  const fetchUsers = async () => {
+  const calculateAidInBackground = useCallback(async (users: User[]) => {
+    // Prevent duplicate calculations using ref (works across StrictMode double calls)
+    if (aidCalculationInProgress.current) {
+      console.log('Aid calculation already in progress (ref check), skipping...');
+      return;
+    }
+    
+    aidCalculationInProgress.current = true;
+    setAidCalculating(true);
+    setAidProgress('계산 시작...');
+    
     try {
-      setLoading(true);
-      const response = await userService.getUsers({ 
-        page: currentPage, 
+      const aidInfo = await aidCalculationService.calculateMultipleUsersRemainingAid(
+        users, 
+        (progressMessage: string) => {
+          setAidProgress(progressMessage);
+        }
+      );
+      setUserAidInfo(aidInfo);
+      setAidProgress('계산 완료');
+    } catch (aidError) {
+      console.error('Error calculating aid info:', aidError);
+      setAidProgress('계산 실패');
+    } finally {
+      setAidCalculating(false);
+      aidCalculationInProgress.current = false;
+      // Clear progress message after a short delay
+      setTimeout(() => setAidProgress(''), 2000);
+    }
+  }, []); // No dependencies needed since we use refs for state
+
+  const fetchUsers = useCallback(async (page = currentPage, searchTerm = search) => {
+    setLoading(true);
+    try {
+      const response = await userService.getUsers({
+        page,
         limit: itemsPerPage,
-        search: search
+        search: searchTerm
       });
-      
-      // Ensure each user has guardians property
-      const usersWithGuardians = response.users.map(user => ({
-        ...user,
-        guardians: user.guardians || []
-      }));
-      
-      setAllUsers(usersWithGuardians);
+      setAllUsers(response.users || []);
       setTotalPages(response.totalPages || 1);
       setCurrentPage(response.currentPage || 1);
       setError(null);
+      
+      // Start aid calculation in background after users are loaded
+      if (response.users && response.users.length > 0) {
+        calculateAidInBackground(response.users);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '사용자 데이터를 불러오는데 실패했습니다.');
+      console.error('Error fetching users:', err);
+      setError('사용자 데이터를 불러오는데 실패했습니다.');
       setAllUsers([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, search, itemsPerPage, calculateAidInBackground]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleFilterReset = () => {
     setSearch('');
     setCurrentPage(1);
-    // Fetch unfiltered results
-    userService.getUsers({ 
-      page: 1, 
-      limit: itemsPerPage,
-      search: ''
-    }).then(response => {
-      const usersWithGuardians = response.users.map(user => ({
-        ...user,
-        guardians: user.guardians || []
-      }));
-      setAllUsers(usersWithGuardians);
-      setTotalPages(response.totalPages || 1);
-      setCurrentPage(1);
-    }).catch(err => {
-      setError(err instanceof Error ? err.message : '사용자 데이터를 불러오는데 실패했습니다.');
-    });
+    // The fetchUsers will automatically be called by useEffect when search/currentPage changes
   };
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchUsers();
+    // The fetchUsers will automatically be called by useEffect when currentPage changes
   };
 
   const handlePageChange = (newPage: number) => {
@@ -171,6 +189,23 @@ const Users: React.FC = () => {
     }
   };
 
+  // Helper function to format aid amount display
+  const formatAidAmount = (user: User): React.ReactNode => {
+    const aidInfo = userAidInfo[user._id];
+    if (!aidInfo) {
+      if (aidCalculating) {
+        return <div className="skeleton-cell" style={{ width: '80%', height: '20px' }}></div>;
+      }
+      return '정보 없음';
+    }
+    
+    if (aidInfo.recipientType === '미등록') {
+      return '지원 없음';
+    }
+    
+    return `${aidInfo.remainingAidAmount.toLocaleString()}원`;
+  };
+
   // Render user row based on edit state
   const renderUserRow = (user: EditableUser) => {
     if (user.isEditing) {
@@ -250,6 +285,7 @@ const Users: React.FC = () => {
               <label htmlFor={`sms-consent-${user._id}`}>동의</label>
             </div>
           </td>
+          <td>{formatAidAmount(user as User)}</td>
           <td>
             <textarea
               value={editingUser?.guardianText || ''}
@@ -288,9 +324,10 @@ const Users: React.FC = () => {
           <td>{user.recipientType}</td>
           <td>{user.supportedDistrict}</td>
           <td>{user.smsConsent ? '동의' : '미동의'}</td>
+          <td>{formatAidAmount(user as User)}</td>
           <td>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>{displayGuardians(user)}</div>
+              <div>{displayGuardians(user as User)}</div>
               <Button
                 onClick={() => handleEditClick(user)}
                 variant="primary"
@@ -338,6 +375,14 @@ const Users: React.FC = () => {
               <th>유형</th>
               <th>지원구</th>
               <th>SMS동의</th>
+              <th>
+                잔여 지원금
+                {aidCalculating && (
+                  <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal', marginTop: '2px' }}>
+                    {aidProgress}
+                  </div>
+                )}
+              </th>
               <th>보호자</th>
             </tr>
           </thead>
@@ -351,13 +396,14 @@ const Users: React.FC = () => {
                   <td><div className="skeleton-cell" style={{ width: `${50 + (i % 5) * 8}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${40 + (i % 3) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${50 + (i % 5) * 8}%` }}></div></td>
+                  <td><div className="skeleton-cell" style={{ width: `${50 + (i % 5) * 8}%` }}></div></td>
                 </tr>
               ))
             ) : allUsers.length > 0 ? (
               allUsers.map(user => renderUserRow(user))
             ) : (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: '#888', padding: '2rem' }}>
+                <td colSpan={7} style={{ textAlign: 'center', color: '#888', padding: '2rem' }}>
                   등록된 사용자가 없습니다.
                 </td>
               </tr>

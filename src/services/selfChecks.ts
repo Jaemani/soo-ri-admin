@@ -50,6 +50,7 @@ export interface SelfCheckFilters {
   endDate?: string;
   search?: string;
   checkResultSearch?: string;
+  checkResults?: string;
   hasIssues?: boolean;
 }
 

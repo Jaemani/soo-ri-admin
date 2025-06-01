@@ -1,6 +1,6 @@
 .metric-card {
   background-color: white;
-  border-radius: var(--radius-md);
+  border-radius: 8px !important;
   box-shadow: var(--shadow);
   padding: 24px;
   transition: all 0.3s ease;

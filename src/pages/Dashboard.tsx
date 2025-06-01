@@ -3,6 +3,9 @@ import MetricCard from '../components/features/dashboard/MetricCard';
 import { useUsers } from '../contexts/UserContext';
 import { User } from '../services/users';
 import { repairService } from '../services/repairs';
+import { repairStationService, RepairStation } from '../services/repairStation';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 import './Dashboard.css';
 
 // SVG Icons
@@ -69,6 +72,16 @@ const Dashboard: React.FC = () => {
   const { users, loading, error, totalUsers } = useUsers();
   const [totalRepairs, setTotalRepairs] = useState<number>(0);
   const [recentRepairs, setRecentRepairs] = useState<number>(0);
+  const [repairStation, setRepairStation] = useState<RepairStation | null>(null);
+  const [aidValues, setAidValues] = useState<number[]>([0, 0, 0]);
+  const [isEditingAid, setIsEditingAid] = useState(false);
+  const [editingAidValues, setEditingAidValues] = useState<number[]>([0, 0, 0]);
+  const [editingAidInputs, setEditingAidInputs] = useState<string[]>(['0', '0', '0']);
+  const [aidLoading, setAidLoading] = useState(false);
+  const [repairStationLoading, setRepairStationLoading] = useState(true);
+  const [repairStationError, setRepairStationError] = useState<string | null>(null);
+
+  const recipientTypeLabels = ['일반', '차상위', '수급'];
 
   useEffect(() => {
     // Fetch total repairs
@@ -88,7 +101,98 @@ const Dashboard: React.FC = () => {
     }).then(res => {
       setRecentRepairs(res.total || 0);
     });
+
+    // Fetch repair station aid values
+    setRepairStationLoading(true);
+    repairStationService.getRepairStation().then(res => {
+      console.log('Repair station response:', res);
+      if (res.success && res.repairStation) {
+        setRepairStation(res.repairStation);
+        setAidValues(res.repairStation.aid);
+        setEditingAidValues(res.repairStation.aid);
+        setEditingAidInputs(res.repairStation.aid.map(val => val.toString()));
+        console.log('Repair station loaded:', res.repairStation);
+        setRepairStationError(null);
+      } else {
+        console.error('Failed to get repair station:', res.message);
+        setRepairStationError(res.message || 'Failed to load repair station');
+      }
+    }).catch(err => {
+      console.error('Error fetching repair station:', err);
+      setRepairStationError('Error fetching repair station data');
+    }).finally(() => {
+      setRepairStationLoading(false);
+    });
   }, []);
+
+  const handleAidEdit = () => {
+    setEditingAidValues([...aidValues]);
+    setEditingAidInputs(aidValues.map(val => val.toString()));
+    setIsEditingAid(true);
+  };
+
+  const handleAidCancel = () => {
+    setEditingAidValues([...aidValues]);
+    setEditingAidInputs(aidValues.map(val => val.toString()));
+    setIsEditingAid(false);
+  };
+
+  const handleAidSave = async () => {
+    setAidLoading(true);
+    try {
+      // Convert string inputs to numbers for saving
+      const numericValues = editingAidInputs.map(val => Math.max(0, parseInt(val) || 0));
+      console.log('Saving aid values:', numericValues);
+      
+      const response = await repairStationService.updateAid(numericValues);
+      console.log('Update response:', response);
+      
+      if (response.success && response.repairStation) {
+        setAidValues(numericValues);
+        setEditingAidValues(numericValues);
+        setEditingAidInputs(numericValues.map(val => val.toString()));
+        setRepairStation(response.repairStation);
+        setIsEditingAid(false);
+        
+        // Refresh data from server to verify the update
+        console.log('Refreshing data from server...');
+        const refreshResponse = await repairStationService.getRepairStation();
+        if (refreshResponse.success && refreshResponse.repairStation) {
+          console.log('Refreshed data:', refreshResponse.repairStation);
+          setRepairStation(refreshResponse.repairStation);
+          setAidValues(refreshResponse.repairStation.aid);
+        }
+      } else {
+        alert('Error updating aid values: ' + response.message);
+      }
+    } catch (error) {
+      console.error('Error updating aid values:', error);
+      alert('Error updating aid values');
+    } finally {
+      setAidLoading(false);
+    }
+  };
+
+  const handleAidValueChange = (index: number, value: string) => {
+    // Allow empty string, numbers, and handle properly
+    const newInputs = [...editingAidInputs];
+    
+    // Only allow numeric characters (and empty string)
+    if (value === '' || /^\d+$/.test(value)) {
+      newInputs[index] = value;
+      setEditingAidInputs(newInputs);
+      
+      // Update numeric values for validation
+      const newNumericValues = [...editingAidValues];
+      newNumericValues[index] = value === '' ? 0 : parseInt(value);
+      setEditingAidValues(newNumericValues);
+    }
+  };
+
+  const handleAidInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Select all text when input is focused
+    e.target.select();
+  };
 
   const getInactiveUsers = (users: User[]) => {
     return users.filter(user => user.role === 'user' && !user.updatedAt).length;
@@ -142,19 +246,95 @@ const Dashboard: React.FC = () => {
           icon={<RepairsIcon />}
           variant="success"
         />
-        <MetricCard
-          title="최근 1주일 수리 건수"
-          value={metrics.recentRepairs}
-          icon={<ChartIcon />}
-          trend={{ value: 12, isPositive: true }}
-        />
-        <MetricCard
-          title="미활동 사용자 수"
-          value={metrics.alertUsers}
-          icon={<AlertIcon />}
-          variant="warning"
-        />
       </div>
+
+      {/* Aid Management Section */}
+      <Card style={{ marginBottom: '2rem' }}>
+        <div style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>지원금 관리</h3>
+              {repairStation && (
+                <p style={{ margin: '0.5rem 0 0', color: 'var(--gray-600)', fontSize: '0.875rem' }}>
+                  {repairStation.label} ({repairStation.code})
+                </p>
+              )}
+            </div>
+            {!isEditingAid && repairStation && (
+              <Button onClick={handleAidEdit} variant="primary" size="small">
+                편집
+              </Button>
+            )}
+          </div>
+          
+          {repairStationLoading ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)' }}>
+              <div className="spinner" style={{ margin: '0 auto 1rem' }}></div>
+              <p>정비소 정보를 불러오는 중...</p>
+            </div>
+          ) : repairStationError ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--red-600)', background: 'var(--red-50)', borderRadius: '0.5rem' }}>
+              <p>정비소 정보를 불러올 수 없습니다.</p>
+              <p style={{ fontSize: '0.875rem', color: 'var(--red-500)' }}>{repairStationError}</p>
+            </div>
+          ) : repairStation ? (
+            <>
+              <div className="aid-grid">
+                {recipientTypeLabels.map((label, index) => (
+                  <div key={label} className="aid-item">
+                    <div className="aid-label">{label}</div>
+                    {isEditingAid ? (
+                      <input
+                        type="text"
+                        className="aid-input"
+                        value={editingAidInputs[index]}
+                        onChange={(e) => handleAidValueChange(index, e.target.value)}
+                        placeholder="0"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        onFocus={handleAidInputFocus}
+                      />
+                    ) : (
+                      <div className="aid-value">
+                        {aidValues[index].toLocaleString()}원
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="aid-item">
+                  <div className="aid-label">미등록</div>
+                  <div className="aid-value aid-disabled">지원 없음</div>
+                </div>
+              </div>
+
+              {isEditingAid && (
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+                  <Button 
+                    onClick={handleAidCancel} 
+                    variant="secondary" 
+                    size="small"
+                    disabled={aidLoading}
+                  >
+                    취소
+                  </Button>
+                  <Button 
+                    onClick={handleAidSave} 
+                    variant="primary" 
+                    size="small"
+                    disabled={aidLoading}
+                  >
+                    {aidLoading ? '저장 중...' : '저장'}
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)' }}>
+              <p>정비소 정보가 연결되지 않았습니다.</p>
+            </div>
+          )}
+        </div>
+      </Card>
 
       <div className="chart-grid">
         <div className="chart-card">

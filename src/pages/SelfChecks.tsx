@@ -1,8 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { selfCheckService, SelfCheck } from '../services/selfChecks';
+import { formatDate } from '../utils/dateFormat';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import FilterPanel, { FilterOption } from '../components/common/FilterPanel';
 import './SelfChecks.css';
+
+interface FilterState {
+  search: string;
+  checkResults: string[];
+  startDate: string;
+  endDate: string;
+  [key: string]: string | string[];
+}
+
+const initialFilter: FilterState = {
+  search: '',
+  checkResults: [],
+  startDate: '',
+  endDate: ''
+};
 
 const SelfChecks: React.FC = () => {
   const [allSelfChecks, setAllSelfChecks] = useState<SelfCheck[]>([]);
@@ -10,34 +27,31 @@ const SelfChecks: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState('');
-  const [checkResultSearch, setCheckResultSearch] = useState('');
+  const [filters, setFilters] = useState<FilterState>(initialFilter);
   const [itemsPerPage] = useState(10);
   const [selectedSelfCheck, setSelectedSelfCheck] = useState<SelfCheck | null>(null);
-  const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: ''
-  });
 
-  useEffect(() => {
-    fetchAllSelfChecks();
-  }, []);
+  // Ref to prevent duplicate API calls in StrictMode
+  const fetchInProgress = useRef(false);
 
-  // Fetch self checks when page changes (server-side pagination)
-  useEffect(() => {
-    fetchAllSelfChecks();
-  }, [currentPage]);
+  const fetchAllSelfChecks = useCallback(async (page = currentPage, filterParams = filters) => {
+    // Prevent duplicate calls
+    if (fetchInProgress.current) {
+      console.log('SelfChecks fetch already in progress, skipping...');
+      return;
+    }
 
-  const fetchAllSelfChecks = async () => {
+    fetchInProgress.current = true;
+    setLoading(true);
+    
     try {
-      setLoading(true);
       const response = await selfCheckService.getAllSelfChecks({
-        page: currentPage,
+        page,
         limit: itemsPerPage,
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        search,
-        checkResultSearch
+        startDate: filterParams.startDate,
+        endDate: filterParams.endDate,
+        search: filterParams.search,
+        checkResults: filterParams.checkResults.join(',')
       });
       
       setAllSelfChecks(response.selfChecks || []);
@@ -50,8 +64,21 @@ const SelfChecks: React.FC = () => {
       setAllSelfChecks([]);
     } finally {
       setLoading(false);
+      fetchInProgress.current = false;
     }
-  };
+  }, [currentPage, itemsPerPage]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchAllSelfChecks();
+  }, [fetchAllSelfChecks]);
+
+  // Separate effect to handle page changes
+  useEffect(() => {
+    if (currentPage > 1) { // Only fetch if not on first page (avoid duplicate initial call)
+      fetchAllSelfChecks(currentPage, filters);
+    }
+  }, [currentPage]); // This will only trigger when page changes
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -59,34 +86,21 @@ const SelfChecks: React.FC = () => {
     }
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setDateRange(prev => ({ ...prev, [name]: value }));
+  const handleFilterChange = (name: string, value: string | string[]) => {
+    setFilters(prev => ({ ...prev, [name]: value }));
+    // Don't reset page or trigger search automatically
   };
 
   const handleFilterReset = () => {
-    setSearch('');
-    setCheckResultSearch('');
-    setDateRange({ startDate: '', endDate: '' });
+    setFilters(initialFilter);
     setCurrentPage(1);
-    // Fetch unfiltered results
-    selfCheckService.getAllSelfChecks({
-      page: 1,
-      limit: itemsPerPage,
-      startDate: '',
-      endDate: '',
-      search: '',
-      checkResultSearch: ''
-    }).then(response => {
-      setAllSelfChecks(response.selfChecks || []);
-      setTotalPages(response.totalPages || 1);
-      setCurrentPage(1);
-      setError(null);
-    }).catch(err => {
-      console.error('Error fetching all self checks:', err);
-      setError('자가진단 데이터를 불러오는데 실패했습니다.');
-      setAllSelfChecks([]);
-    });
+    // Only fetch after reset - this is manual action
+    fetchAllSelfChecks(1, initialFilter);
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchAllSelfChecks(1, filters);
   };
 
   const handleSelfCheckClick = (selfCheck: SelfCheck) => {
@@ -101,14 +115,11 @@ const SelfChecks: React.FC = () => {
   const displayData = allSelfChecks;
   const currentSelfChecks = displayData;
 
-  // Format the date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
+  // Function to truncate QR ID for table display
+  const truncateQRId = (qrId: string, maxLength: number = 15): string => {
+    if (!qrId || qrId === '미상') return qrId;
+    if (qrId.length <= maxLength) return qrId;
+    return qrId.substring(0, maxLength) + '...';
   };
 
   // Render the status badge for an issue
@@ -117,6 +128,40 @@ const SelfChecks: React.FC = () => {
       {value ? '문제 있음' : '정상'}
     </span>
   );
+
+  // Create filter options
+  const filterOptions: FilterOption[] = [
+    {
+      name: 'search',
+      label: '검색어',
+      type: 'text',
+      placeholder: '사용자명, QR ID 검색'
+    },
+    {
+      name: 'checkResults',
+      label: '점검결과 검색',
+      type: 'multiselect',
+      options: [
+        { value: '모터', label: '모터' },
+        { value: '배터리', label: '배터리' },
+        { value: '제동', label: '제동' },
+        { value: '타이어', label: '타이어' },
+        { value: '시트', label: '시트' },
+        { value: '프레임', label: '프레임' },
+        { value: '기타', label: '기타' }
+      ]
+    },
+    {
+      name: 'startDate',
+      label: '시작일',
+      type: 'date'
+    },
+    {
+      name: 'endDate',
+      label: '종료일',
+      type: 'date'
+    }
+  ];
 
   return (
     <div className="selfchecks-page">
@@ -127,62 +172,13 @@ const SelfChecks: React.FC = () => {
         </div>
       </div>
       
-      <Card className="selfchecks-filter-card">
-        <div className="selfchecks-filter-form">
-          <div style={{ flex: 2 }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              검색어
-            </label>
-            <input
-              className="selfchecks-search-input"
-              type="text"
-              placeholder="사용자명, 차량번호 검색"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-          <div style={{ flex: 2 }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              점검결과 검색
-            </label>
-            <input
-              className="selfchecks-search-input"
-              type="text"
-              placeholder="점검 항목 검색"
-              value={checkResultSearch}
-              onChange={e => setCheckResultSearch(e.target.value)}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              시작일
-            </label>
-            <input
-              type="date"
-              name="startDate"
-              value={dateRange.startDate}
-              onChange={handleDateChange}
-              className="selfchecks-search-input"
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', color: 'var(--gray-700)' }}>
-              종료일
-            </label>
-            <input
-              type="date"
-              name="endDate"
-              value={dateRange.endDate}
-              onChange={handleDateChange}
-              className="selfchecks-search-input"
-            />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
-            <Button type="button" variant="primary" size="medium" onClick={handleFilterReset}>필터초기화</Button>
-            <Button type="button" variant="primary" size="medium" onClick={fetchAllSelfChecks}>검색</Button>
-          </div>
-        </div>
-      </Card>
+      <FilterPanel
+        filters={filters}
+        options={filterOptions}
+        onChange={handleFilterChange}
+        onReset={handleFilterReset}
+        onSearch={handleSearch}
+      />
       
       <Card className="selfchecks-table-card">
         <table className="selfchecks-table">
@@ -190,8 +186,9 @@ const SelfChecks: React.FC = () => {
             <tr>
               <th>자가진단 일시</th>
               <th>사용자</th>
-              <th>차량번호</th>
+              <th>QR ID</th>
               <th>점검결과</th>
+              <th>상세보기</th>
             </tr>
           </thead>
           <tbody>
@@ -207,25 +204,25 @@ const SelfChecks: React.FC = () => {
               ))
             ) : currentSelfChecks.length > 0 ? (
               currentSelfChecks.map(selfCheck => {
-                // Determine troubled parts
+                // Determine troubled parts - remove "문제 있음" text
                 const issues: string[] = [];
-                if (selfCheck.motorNoise || selfCheck.abnormalSpeed) issues.push('모터 문제 있음');
-                if (selfCheck.breakDelay || selfCheck.breakPadIssue) issues.push('제동 문제 있음');
+                if (selfCheck.motorNoise || selfCheck.abnormalSpeed) issues.push('모터');
+                if (selfCheck.breakDelay || selfCheck.breakPadIssue) issues.push('제동');
                 if (
                   selfCheck.batteryBlinking ||
                   selfCheck.chargingNotStart ||
                   selfCheck.batteryDischargeFast ||
                   selfCheck.incompleteCharging
-                ) issues.push('배터리 문제 있음');
-                if (selfCheck.frameNoise || selfCheck.frameCrack) issues.push('프레임 문제 있음');
-                if (selfCheck.tubePunctureFrequent || selfCheck.tireWearFrequent) issues.push('타이어 문제 있음');
-                if (selfCheck.seatUnstable || selfCheck.seatCoverIssue) issues.push('시트 문제 있음');
-                if (selfCheck.footRestLoose || selfCheck.antislipWorn) issues.push('기타 문제 있음');
+                ) issues.push('배터리');
+                if (selfCheck.frameNoise || selfCheck.frameCrack) issues.push('프레임');
+                if (selfCheck.tubePunctureFrequent || selfCheck.tireWearFrequent) issues.push('타이어');
+                if (selfCheck.seatUnstable || selfCheck.seatCoverIssue) issues.push('시트');
+                if (selfCheck.footRestLoose || selfCheck.antislipWorn) issues.push('기타');
                 return (
                   <tr key={selfCheck._id}>
                     <td>{formatDate(selfCheck.createdAt)}</td>
                     <td>{selfCheck.user?.name || '미상'}</td>
-                    <td>{selfCheck.vehicle?.vehicleId || '미상'}</td>
+                    <td title={selfCheck.vehicle?.vehicleId || '미상'}>{truncateQRId(selfCheck.vehicle?.vehicleId || '미상')}</td>
                     <td>
                       {issues.length > 0 ? (
                         <div className="issue-tags">
@@ -304,7 +301,7 @@ const SelfChecks: React.FC = () => {
               <span className="selfcheck-detail-value">{selectedSelfCheck.user?.name || '미상'}</span>
             </div>
             <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">차량번호</span>
+              <span className="selfcheck-detail-label">QR ID</span>
               <span className="selfcheck-detail-value">{selectedSelfCheck.vehicle?.vehicleId || '미상'}</span>
             </div>
             <div className="selfcheck-detail-item">

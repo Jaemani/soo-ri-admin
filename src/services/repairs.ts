@@ -63,18 +63,20 @@ export interface RepairsResponse {
 }
 
 export interface RepairFilters {
-  page?: number;
-  limit?: number;
+  vehicleId?: string;
   startDate?: string;
   endDate?: string;
-  repairStationCode?: string;
-  isAccident?: boolean;
   repairType?: string;
+  repairStationCode?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  searchTerm?: string;
+  repairCategories?: string;
+  memo?: string;
   minAmount?: string;
   maxAmount?: string;
-  vehicleId?: string;
-  searchTerm?: string;
-  repairTypeSearch?: string;
 }
 
 export const repairService = {

@@ -429,7 +429,7 @@ a:hover {
 /* Filter Section */
 .filter-section {
   background-color: white;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: var(--shadow);

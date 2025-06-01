@@ -53,7 +53,7 @@
 
 .chart-card {
   background-color: white;
-  border-radius: var(--radius-md);
+  border-radius: 8px !important;
   box-shadow: var(--shadow);
   overflow: hidden;
   height: 350px;
@@ -145,8 +145,9 @@
 }
 
 .recent-activity {
+  margin-top: 2rem;
   background-color: white;
-  border-radius: var(--radius-md);
+  border-radius: 8px !important;
   box-shadow: var(--shadow);
   padding: 24px;
   margin-bottom: 32px;
@@ -156,48 +157,51 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
 .section-header h3 {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: var(--gray-800);
+  color: var(--gray-900);
   margin: 0;
 }
 
 .view-all {
-  font-size: 0.875rem;
   color: var(--primary-600);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.view-all:hover {
+  color: var(--primary-700);
+  text-decoration: underline;
 }
 
 .activity-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px;
-  border-radius: var(--radius);
-  transition: all 0.2s;
-}
-
-.activity-item:hover {
-  background-color: var(--gray-50);
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: 8px !important;
+  border: 1px solid var(--gray-200);
 }
 
 .activity-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
@@ -206,20 +210,73 @@
 }
 
 .activity-title {
-  font-weight: 600;
-  color: var(--gray-800);
-  margin-bottom: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-900);
+  margin-bottom: 0.25rem;
 }
 
 .activity-desc {
   font-size: 0.875rem;
   color: var(--gray-600);
+  line-height: 1.4;
 }
 
 .activity-time {
   font-size: 0.75rem;
   color: var(--gray-500);
-  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Aid Management Styles */
+.aid-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.aid-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+}
+
+.aid-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.aid-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.aid-value.aid-disabled {
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.aid-input {
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.aid-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
 }
 
 .dashboard-loading {

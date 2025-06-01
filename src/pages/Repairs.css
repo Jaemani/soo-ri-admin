@@ -1,7 +1,5 @@
 .repairs-page {
-  padding: calc(var(--header-height) + 1.5rem) 1.5rem 1.5rem 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: calc(var(--header-height) + 2rem) 2rem 2rem 2rem;
 }
 
 .repairs-tabs {
@@ -82,6 +80,9 @@
 
 .repairs-table-card {
   overflow: hidden;
+  border-radius: 8px !important;
+  background: white;
+  box-shadow: var(--shadow);
 }
 
 .repairs-table {
@@ -134,7 +135,7 @@
 .tag {
   display: inline-block;
   padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
+  border-radius: var(--radius);
   font-size: 0.75rem;
   font-weight: 500;
 }
@@ -165,7 +166,7 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
-  border-radius: 4px;
+  border-radius: var(--radius);
   display: block;
   overflow: hidden;
   position: relative;
@@ -240,6 +241,37 @@
 .repair-detail-value {
   font-size: 0.875rem;
   color: var(--gray-900);
+}
+
+.repairs-search-input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--gray-900);
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.repairs-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  margin: 1rem 0;
+}
+
+.repairs-table td:nth-child(7) {
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-100);
+  padding: 0.5rem 0.75rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
  

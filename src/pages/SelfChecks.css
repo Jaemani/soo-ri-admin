@@ -30,7 +30,7 @@
 .selfchecks-tab-btn {
   padding: 0.75rem 1.5rem;
   border: 1px solid var(--gray-200);
-  border-radius: 0.5rem;
+  border-radius: 8px !important;
   background: white;
   color: var(--gray-600);
   font-size: 0.875rem;
@@ -64,7 +64,7 @@
   width: 100%;
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--gray-300);
-  border-radius: 0.375rem;
+  border-radius: 8px !important;
   font-size: 0.875rem;
   color: var(--gray-900);
   background: white;
@@ -83,6 +83,9 @@
 
 .selfchecks-table-card {
   overflow: hidden;
+  border-radius: 8px !important;
+  background: white;
+  box-shadow: var(--shadow);
 }
 
 .selfchecks-table {
@@ -114,7 +117,7 @@
 /* Only apply ellipsis to the 점검결과 column (4th column) */
 .selfchecks-table td:nth-child(4) {
   background: var(--gray-50);
-  border-radius: 0.25rem;
+  border-radius: var(--radius);
   border: 1px solid var(--gray-100);
   padding: 0.5rem 0.75rem;
   max-width: 320px;
@@ -132,42 +135,16 @@
 
 .selfchecks-pagination {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid var(--gray-200);
 }
 
-.selfchecks-pagination button {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--gray-300);
-  border-radius: 0.375rem;
-  background: white;
-  color: var(--gray-700);
+.selfchecks-pagination-info {
+  color: var(--gray-600);
   font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.selfchecks-pagination button:hover:not(:disabled) {
-  background: var(--gray-50);
-  border-color: var(--gray-400);
-}
-
-.selfchecks-pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.selfchecks-pagination button.active {
-  background: var(--primary-500);
-  border-color: var(--primary-500);
-  color: white;
-}
-
-.selfchecks-pagination button.active:hover {
-  background: var(--primary-600);
-  border-color: var(--primary-600);
 }
 
 .selfchecks-error {
@@ -175,7 +152,7 @@
   text-align: center;
   padding: 1rem;
   background: var(--red-50);
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   margin: 1rem 0;
 }
 
@@ -190,7 +167,7 @@
   padding: 3rem;
   color: var(--gray-500);
   background: var(--gray-50);
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   margin: 1rem 0;
 }
 
@@ -233,7 +210,7 @@
 
 .selfchecks-detail-content {
   background: white;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
@@ -305,7 +282,7 @@
 .selfchecks-detail-issue {
   padding: 0.75rem;
   background: var(--red-50);
-  border-radius: 0.375rem;
+  border-radius: var(--radius);
   margin-bottom: 0.75rem;
 }
 
@@ -341,7 +318,7 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
-  border-radius: 4px;
+  border-radius: var(--radius);
   display: block;
   overflow: hidden;
   position: relative;
@@ -448,4 +425,8 @@
 
 .selfchecks-table tr + tr td {
   margin-top: 0.5rem;
+}
+
+.selfchecks-page .filter-panel {
+  margin-bottom: 1rem;
 } 

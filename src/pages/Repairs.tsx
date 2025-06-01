@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { repairService, Repair } from '../services/repairs';
 import { userService, User } from '../services/users';
 import { vehiclesService, Vehicle } from '../services/vehicles';
+import { formatDate } from '../utils/dateFormat';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import FilterPanel, { FilterOption } from '../components/common/FilterPanel';
@@ -10,19 +11,21 @@ import './Repairs.css';
 
 interface FilterState {
   searchTerm: string;
-  repairTypeSearch: string;
+  repairCategories: string[];
+  memo: string;
   startDate: string;
   endDate: string;
   repairType: string;
   repairStationCode: string;
   minAmount: string;
   maxAmount: string;
-  [key: string]: string;
+  [key: string]: string | string[];
 }
 
 const initialFilter: FilterState = {
   searchTerm: '',
-  repairTypeSearch: '',
+  repairCategories: [],
+  memo: '',
   startDate: '',
   endDate: '',
   repairType: '',
@@ -31,14 +34,11 @@ const initialFilter: FilterState = {
   maxAmount: ''
 };
 
-// Function to format date
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
+// Function to truncate QR ID for table display
+const truncateQRId = (qrId: string, maxLength: number = 15): string => {
+  if (!qrId || qrId === '미상') return qrId;
+  if (qrId.length <= maxLength) return qrId;
+  return qrId.substring(0, maxLength) + '...';
 };
 
 const Repairs: React.FC = () => {
@@ -52,31 +52,49 @@ const Repairs: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedRepair, setSelectedRepair] = useState<Repair | null>(null);
 
-  // Fetch users on component mount
-  useEffect(() => {
-    userService.getUsers({ page: 1, limit: 100 }).then(res => setUsers(res.users));
-    fetchRepairs();
+  // Refs to prevent duplicate API calls in StrictMode
+  const fetchRepairsInProgress = useRef(false);
+  const fetchUsersInProgress = useRef(false);
+
+  const fetchUsers = useCallback(async () => {
+    if (fetchUsersInProgress.current) {
+      console.log('Users fetch already in progress, skipping...');
+      return;
+    }
+
+    fetchUsersInProgress.current = true;
+    try {
+      const res = await userService.getUsers({ page: 1, limit: 100 });
+      setUsers(res.users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      fetchUsersInProgress.current = false;
+    }
   }, []);
 
-  // Fetch repairs when page changes (server-side pagination)
-  useEffect(() => {
-    fetchRepairs();
-  }, [currentPage]);
+  const fetchRepairs = useCallback(async (page = currentPage, filterParams = filters) => {
+    if (fetchRepairsInProgress.current) {
+      console.log('Repairs fetch already in progress, skipping...');
+      return;
+    }
 
-  const fetchRepairs = async () => {
+    fetchRepairsInProgress.current = true;
     setLoading(true);
+    
     try {
       const response = await repairService.getAllRepairs({
-        page: currentPage,
+        page,
         limit: itemsPerPage,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        repairType: filters.repairType,
-        repairStationCode: filters.repairStationCode,
-        minAmount: filters.minAmount,
-        maxAmount: filters.maxAmount,
-        searchTerm: filters.searchTerm,
-        repairTypeSearch: filters.repairTypeSearch
+        startDate: filterParams.startDate,
+        endDate: filterParams.endDate,
+        repairType: filterParams.repairType,
+        repairStationCode: filterParams.repairStationCode,
+        minAmount: filterParams.minAmount,
+        maxAmount: filterParams.maxAmount,
+        searchTerm: filterParams.searchTerm,
+        repairCategories: filterParams.repairCategories.join(','),
+        memo: filterParams.memo
       });
       
       setRepairs(response.repairs || []);
@@ -90,43 +108,41 @@ const Repairs: React.FC = () => {
       setTotalPages(1);
     } finally {
       setLoading(false);
+      fetchRepairsInProgress.current = false;
     }
-  };
+  }, [currentPage, itemsPerPage]);
+
+  // Initial fetch - only fetch on mount, not on filter changes
+  useEffect(() => {
+    fetchUsers();
+    fetchRepairs();
+  }, [fetchUsers, fetchRepairs]);
+
+  // Separate effect to handle page changes
+  useEffect(() => {
+    if (currentPage > 1) { // Only fetch if not on first page (avoid duplicate initial call)
+      fetchRepairs(currentPage, filters);
+    }
+  }, [currentPage]); // This will only trigger when page changes
 
   // Pagination - using server-side pagination
   const currentItems = filteredRepairs;
 
-  const handleFilterChange = (name: string, value: string) => {
+  const handleFilterChange = (name: string, value: string | string[]) => {
     setFilters(prev => ({ ...prev, [name]: value }));
-    setCurrentPage(1); // Reset to first page when filter changes
+    // Don't reset page or trigger search automatically
   };
   
   const handleFilterReset = () => {
     setFilters(initialFilter);
     setCurrentPage(1);
-    // Fetch unfiltered results
-    repairService.getAllRepairs({
-      page: 1,
-      limit: itemsPerPage,
-      startDate: '',
-      endDate: '',
-      repairType: '',
-      repairStationCode: '',
-      minAmount: '',
-      maxAmount: '',
-      searchTerm: '',
-      repairTypeSearch: ''
-    }).then(response => {
-      setRepairs(response.repairs || []);
-      setFilteredRepairs(response.repairs || []);
-      setTotalPages(response.totalPages || 1);
-      setCurrentPage(1);
-    }).catch(e => {
-      console.error('Error fetching repairs:', e);
-      setRepairs([]);
-      setFilteredRepairs([]);
-      setTotalPages(1);
-    });
+    // Only fetch after reset - this is manual action
+    fetchRepairs(1, initialFilter);
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchRepairs(1, filters);
   };
 
   // Format repair categories
@@ -149,13 +165,29 @@ const Repairs: React.FC = () => {
       name: 'searchTerm',
       label: '검색어',
       type: 'text',
-      placeholder: '사용자명, 차량번호 검색'
+      placeholder: '사용자명, QR ID 검색'
     },
     {
-      name: 'repairTypeSearch',
-      label: '수리 내용 검색',
+      name: 'repairCategories',
+      label: '수리 항목',
+      type: 'multiselect',
+      options: [
+        { value: '구동장치', label: '구동장치' },
+        { value: '전자제어', label: '전자제어' },
+        { value: '제동장치', label: '제동장치' },
+        { value: '타이어&튜브', label: '타이어&튜브' },
+        { value: '배터리', label: '배터리' },
+        { value: '시트', label: '시트' },
+        { value: '발걸이', label: '발걸이' },
+        { value: '프레임', label: '프레임' },
+        { value: '기타', label: '기타' }
+      ]
+    },
+    {
+      name: 'memo',
+      label: '메모 검색',
       type: 'text',
-      placeholder: '수리 유형(사고/정기점검), 수리 항목 검색'
+      placeholder: '메모 내용 검색'
     },
     {
       name: 'startDate',
@@ -172,7 +204,6 @@ const Repairs: React.FC = () => {
       label: '수리 유형',
       type: 'select',
       options: [
-        { value: '', label: '전체' },
         { value: 'accident', label: '사고' },
         { value: 'regular', label: '정기점검' }
       ]
@@ -205,7 +236,7 @@ const Repairs: React.FC = () => {
         options={filterOptions}
         onChange={handleFilterChange}
         onReset={handleFilterReset}
-        onSearch={fetchRepairs}
+        onSearch={handleSearch}
       />
 
       <Card className={`repairs-table-card ${loading ? 'loading' : ''}`}>
@@ -214,7 +245,7 @@ const Repairs: React.FC = () => {
             <tr>
               <th>수리일자</th>
               <th>사용자</th>
-              <th>차량번호</th>
+              <th>QR ID</th>
               <th>정비소</th>
               <th>수리 유형</th>
               <th>수리 항목</th>
@@ -243,7 +274,7 @@ const Repairs: React.FC = () => {
                 <tr key={repair.id || repair._id}>
                   <td>{formatDate(repair.repairedAt)}</td>
                   <td>{repair.user?.name || '미상'}</td>
-                  <td>{repair.vehicle?.vehicleId || '미상'}</td>
+                  <td title={repair.vehicle?.vehicleId || '미상'}>{truncateQRId(repair.vehicle?.vehicleId || '미상')}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>
                     <span className={`tag ${repair.isAccident ? 'tag-accident' : 'tag-regular'}`}>
@@ -306,7 +337,7 @@ const Repairs: React.FC = () => {
           </div>
           <div className="repair-detail">
             <div className="repair-detail-item"><span className="repair-detail-label">사용자</span><span className="repair-detail-value">{selectedRepair.user?.name || '미상'}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">차량번호</span><span className="repair-detail-value">{selectedRepair.vehicle?.vehicleId || '미상'}</span></div>
+            <div className="repair-detail-item"><span className="repair-detail-label">QR ID</span><span className="repair-detail-value">{selectedRepair.vehicle?.vehicleId || '미상'}</span></div>
             <div className="repair-detail-item"><span className="repair-detail-label">수리일자</span><span className="repair-detail-value">{formatDate(selectedRepair.repairedAt)}</span></div>
             <div className="repair-detail-item"><span className="repair-detail-label">정비소</span><span className="repair-detail-value">{selectedRepair.repairStationLabel}</span></div>
             <div className="repair-detail-item"><span className="repair-detail-label">수리 유형</span><span className="repair-detail-value">{selectedRepair.isAccident ? '사고' : '정기점검'}</span></div>

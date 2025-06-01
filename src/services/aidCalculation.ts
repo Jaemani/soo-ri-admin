@@ -111,15 +111,27 @@ export const aidCalculationService = {
       
       // 5. Calculate aid for each user
       onProgress?.('지원금 계산 중...');
+      
+      // Get current year start date (January 1st of current year)
+      const currentYear = new Date().getFullYear();
+      const currentYearStart = new Date(currentYear, 0, 1); // January 1st of current year
+      
       users.forEach(user => {
         const repairs = userRepairs[user._id] || [];
-        const totalRepairAmount = repairs.reduce((sum, repair) => sum + (repair.billingPrice || 0), 0);
+        
+        // Filter repairs to only include current year repairs (from January 1st)
+        const currentYearRepairs = repairs.filter((repair: Repair) => {
+          const repairDate = new Date(repair.repairedAt);
+          return repairDate >= currentYearStart;
+        });
+        
+        const totalRepairAmount = currentYearRepairs.reduce((sum, repair) => sum + (repair.billingPrice || 0), 0);
         
         // Find station for aid calculation
         let station: RepairStation | undefined;
         let repairStationCode: string | undefined;
         
-        // Try to get station from repairs first
+        // Try to get station from repairs first (use all repairs, not just current year)
         if (repairs.length > 0) {
           repairStationCode = repairs[0].repairStationCode;
           if (repairStationCode) {

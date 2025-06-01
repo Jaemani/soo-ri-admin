@@ -376,7 +376,7 @@ const Users: React.FC = () => {
               <th>지원구</th>
               <th>SMS동의</th>
               <th>
-                잔여 지원금
+                올해 잔여 지원금
                 {aidCalculating && (
                   <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal', marginTop: '2px' }}>
                     {aidProgress}

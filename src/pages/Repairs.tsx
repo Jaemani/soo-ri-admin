@@ -159,6 +159,17 @@ const Repairs: React.FC = () => {
     setSelectedRepair(null);
   };
 
+  // Placeholder functions for download buttons (non-functional for now)
+  const handleExcelDownload = () => {
+    console.log('전체데이터 엑셀 다운로드 clicked');
+    // TODO: Implement excel download functionality
+  };
+
+  const handleRepairConfirmationDownload = (repair: Repair) => {
+    console.log('수리확인서 다운로드 clicked for repair:', repair.id || repair._id);
+    // TODO: Implement repair confirmation download functionality
+  };
+
   // Create dynamic filter options including users and vehicles
   const filterOptions: FilterOption[] = [
     {
@@ -229,6 +240,13 @@ const Repairs: React.FC = () => {
           <h1 className="page-title">수리 관리</h1>
           <p className="page-description">차량 수리 이력을 조회하고 관리합니다.</p>
         </div>
+        <Button 
+          onClick={handleExcelDownload}
+          variant="primary"
+          size="medium"
+        >
+          전체데이터 엑셀 다운로드
+        </Button>
       </div>
       
       <FilterPanel
@@ -333,7 +351,16 @@ const Repairs: React.FC = () => {
         <Card style={{ marginTop: '1rem', padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>수리 상세정보</h2>
-            <Button onClick={handleCloseRepairDetail} variant="secondary" size="small">닫기</Button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Button 
+                onClick={() => handleRepairConfirmationDownload(selectedRepair)}
+                variant="primary" 
+                size="small"
+              >
+                수리확인서 다운로드
+              </Button>
+              <Button onClick={handleCloseRepairDetail} variant="secondary" size="small">닫기</Button>
+            </div>
           </div>
           <div className="repair-detail">
             <div className="repair-detail-item"><span className="repair-detail-label">사용자</span><span className="repair-detail-value">{selectedRepair.user?.name || '미상'}</span></div>

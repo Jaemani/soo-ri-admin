@@ -253,7 +253,7 @@ const Dashboard: React.FC = () => {
         <div style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>지원금 관리</h3>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>지원금 관리 (매년 1월 1일)</h3>
               {repairStation && (
                 <p style={{ margin: '0.5rem 0 0', color: 'var(--gray-600)', fontSize: '0.875rem' }}>
                   {repairStation.label} ({repairStation.code})

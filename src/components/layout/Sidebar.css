@@ -2,7 +2,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: 265px;
   height: 100vh;
   background: linear-gradient(180deg, #2a3f90 0%, #1e2b66 100%);
   color: white;
@@ -77,4 +77,24 @@
 
 .nav-list li.active .nav-icon {
   opacity: 1;
+}
+
+.sidebar-logout-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 15%;
+  transform: translateX(-50%);
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-logout-btn:hover {
+  transform: translateX(-50%) translateY(-1px);
 } 

@@ -111,6 +111,12 @@ const SelfChecks: React.FC = () => {
     setSelectedSelfCheck(null);
   };
 
+  // Placeholder function for download button (non-functional for now)
+  const handleExcelDownload = () => {
+    console.log('전체데이터 엑셀 다운로드 clicked');
+    // TODO: Implement excel download functionality
+  };
+
   // Get current page of selfChecks
   const displayData = allSelfChecks;
   const currentSelfChecks = displayData;
@@ -165,13 +171,6 @@ const SelfChecks: React.FC = () => {
 
   return (
     <div className="selfchecks-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">자가진단 모니터링</h1>
-          <p className="page-description">사용자가 제출한 자가진단 결과를 관리합니다.</p>
-        </div>
-      </div>
-      
       <FilterPanel
         filters={filters}
         options={filterOptions}

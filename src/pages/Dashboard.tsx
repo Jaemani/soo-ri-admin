@@ -4,6 +4,7 @@ import { useUsers } from '../contexts/UserContext';
 import { User } from '../services/users';
 import { repairService } from '../services/repairs';
 import { repairStationService, RepairStation } from '../services/repairStation';
+import { getCurrentAdmin } from '../services/auth';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import './Dashboard.css';
@@ -70,6 +71,7 @@ const WarningIcon = () => (
 
 const Dashboard: React.FC = () => {
   const { users, loading, error, totalUsers } = useUsers();
+  const currentAdmin = getCurrentAdmin();
   const [totalRepairs, setTotalRepairs] = useState<number>(0);
   const [recentRepairs, setRecentRepairs] = useState<number>(0);
   const [repairStation, setRepairStation] = useState<RepairStation | null>(null);
@@ -224,7 +226,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <h1>대시보드</h1>
+        <h1>{currentAdmin?.label || '대시보드'}</h1>
         <div className="date-picker">
           <button className="btn btn-secondary">
             <span>최근 30일</span>

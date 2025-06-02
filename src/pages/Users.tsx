@@ -345,13 +345,6 @@ const Users: React.FC = () => {
 
   return (
     <div className="users-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">사용자 관리</h1>
-          <p className="page-description">시스템에 등록된 모든 사용자를 관리합니다.</p>
-        </div>
-      </div>
-      
       <Card className="users-filter-card">
         <div className="users-filter-form">
           <input

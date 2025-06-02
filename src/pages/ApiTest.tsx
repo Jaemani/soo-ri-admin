@@ -74,130 +74,127 @@ const ApiTest: React.FC = () => {
   };
 
   return (
-    <div className="page-container fade-in">
-      <div className="page-header">
-        <h1 className="page-title">API 테스트</h1>
-        <p className="page-description">API 엔드포인트의 동작을 테스트하고 응답을 확인합니다.</p>
-      </div>
-
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={runTests}
-            disabled={loading}
-            variant="primary"
-            loading={loading}
-          >
-            전체 테스트 실행
-          </Button>
-          {results.length > 0 && (
+    <div className="api-test-page">
+      <Card className="api-test-card">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-4">
             <Button
-              onClick={() => setResults([])}
-              variant="secondary"
+              onClick={runTests}
               disabled={loading}
+              variant="primary"
+              loading={loading}
             >
-              결과 초기화
+              전체 테스트 실행
             </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {results.length > 0 && (
-            <span style={{ 
-              fontSize: '0.875rem',
-              color: 'var(--gray-600)'
-            }}>
-              총 {results.length}개 테스트 완료
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4">
-        {results.map((result, index) => (
-          <Card
-            key={index}
-            style={{ 
-              backgroundColor: result.status === 'success' ? 'var(--gray-50)' : '#fff5f5'
-            }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <h3 style={{ 
-                  margin: 0,
-                  fontSize: '1rem',
-                  fontWeight: 500,
-                  color: 'var(--gray-900)'
-                }}>
-                  {result.endpoint}
-                </h3>
-                <span style={{
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  fontSize: '0.75rem',
-                  backgroundColor: result.status === 'success' ? 'var(--success-color)' : 'var(--danger-color)',
-                  color: 'white'
-                }}>
-                  {result.status === 'success' ? '성공' : '실패'}
-                </span>
-              </div>
-            </div>
-            
-            {result.status === 'success' ? (
-              <pre style={{ 
-                margin: 0,
-                padding: '1rem',
-                backgroundColor: 'white',
-                border: '1px solid var(--gray-200)',
-                borderRadius: '0.5rem',
-                fontSize: '0.875rem',
-                overflow: 'auto',
-                color: 'var(--gray-800)',
-                fontFamily: "'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace"
-              }}>
-                {JSON.stringify(result.data, null, 2)}
-              </pre>
-            ) : (
-              <div style={{ 
-                padding: '1rem',
-                backgroundColor: '#fff5f5',
-                border: '1px solid #fecaca',
-                borderRadius: '0.5rem',
-                color: 'var(--danger-color)',
-                fontSize: '0.875rem'
-              }}>
-                <div style={{ marginBottom: '0.5rem', fontWeight: 500 }}>오류 메시지:</div>
-                {result.error}
-              </div>
+            {results.length > 0 && (
+              <Button
+                onClick={() => setResults([])}
+                variant="secondary"
+                disabled={loading}
+              >
+                결과 초기화
+              </Button>
             )}
-          </Card>
-        ))}
-
-        {results.length === 0 && !loading && (
-          <Card>
-            <div style={{ 
-              textAlign: 'center',
-              padding: '3rem 2rem',
-              color: 'var(--gray-500)'
-            }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>🔍</div>
-              <h3 style={{ 
-                margin: '0 0 0.5rem',
-                color: 'var(--gray-700)',
-                fontSize: '1.125rem'
-              }}>
-                API 테스트 결과가 없습니다
-              </h3>
-              <p style={{ 
-                margin: 0,
+          </div>
+          <div className="flex items-center gap-2">
+            {results.length > 0 && (
+              <span style={{ 
                 fontSize: '0.875rem',
+                color: 'var(--gray-600)'
+              }}>
+                총 {results.length}개 테스트 완료
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {results.map((result, index) => (
+            <Card
+              key={index}
+              style={{ 
+                backgroundColor: result.status === 'success' ? 'var(--gray-50)' : '#fff5f5'
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <h3 style={{ 
+                    margin: 0,
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    color: 'var(--gray-900)'
+                  }}>
+                    {result.endpoint}
+                  </h3>
+                  <span style={{
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    backgroundColor: result.status === 'success' ? 'var(--success-color)' : 'var(--danger-color)',
+                    color: 'white'
+                  }}>
+                    {result.status === 'success' ? '성공' : '실패'}
+                  </span>
+                </div>
+              </div>
+              
+              {result.status === 'success' ? (
+                <pre style={{ 
+                  margin: 0,
+                  padding: '1rem',
+                  backgroundColor: 'white',
+                  border: '1px solid var(--gray-200)',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  overflow: 'auto',
+                  color: 'var(--gray-800)',
+                  fontFamily: "'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace"
+                }}>
+                  {JSON.stringify(result.data, null, 2)}
+                </pre>
+              ) : (
+                <div style={{ 
+                  padding: '1rem',
+                  backgroundColor: '#fff5f5',
+                  border: '1px solid #fecaca',
+                  borderRadius: '0.5rem',
+                  color: 'var(--danger-color)',
+                  fontSize: '0.875rem'
+                }}>
+                  <div style={{ marginBottom: '0.5rem', fontWeight: 500 }}>오류 메시지:</div>
+                  {result.error}
+                </div>
+              )}
+            </Card>
+          ))}
+
+          {results.length === 0 && !loading && (
+            <Card>
+              <div style={{ 
+                textAlign: 'center',
+                padding: '3rem 2rem',
                 color: 'var(--gray-500)'
               }}>
-                테스트를 실행하면 결과가 여기에 표시됩니다
-              </p>
-            </div>
-          </Card>
-        )}
-      </div>
+                <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>🔍</div>
+                <h3 style={{ 
+                  margin: '0 0 0.5rem',
+                  color: 'var(--gray-700)',
+                  fontSize: '1.125rem'
+                }}>
+                  API 테스트 결과가 없습니다
+                </h3>
+                <p style={{ 
+                  margin: 0,
+                  fontSize: '0.875rem',
+                  color: 'var(--gray-500)'
+                }}>
+                  테스트를 실행하면 결과가 여기에 표시됩니다
+                </p>
+              </div>
+            </Card>
+          )}
+        </div>
+      </Card>
     </div>
   );
 };

@@ -243,26 +243,21 @@ const Repairs: React.FC = () => {
 
   return (
     <div className="repairs-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">수리 관리</h1>
-          <p className="page-description">차량 수리 이력을 조회하고 관리합니다.</p>
-        </div>
-        <Button 
-          onClick={handleExcelDownload}
-          variant="primary"
-          size="medium"
-        >
-          전체데이터 엑셀 다운로드
-        </Button>
-      </div>
-      
       <FilterPanel
         filters={filters}
         options={filterOptions}
         onChange={handleFilterChange}
         onReset={handleFilterReset}
         onSearch={handleSearch}
+        extraActions={
+          <Button 
+            onClick={handleExcelDownload}
+            variant="primary"
+            size="medium"
+          >
+            전체데이터 엑셀 다운로드
+          </Button>
+        }
       />
 
       <Card className={`repairs-table-card ${loading ? 'loading' : ''}`}>

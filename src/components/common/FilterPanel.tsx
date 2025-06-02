@@ -16,6 +16,7 @@ interface FilterPanelProps {
   onChange: (name: string, value: string | string[]) => void;
   onReset: () => void;
   onSearch?: () => void;
+  extraActions?: React.ReactNode;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -24,6 +25,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   onChange,
   onReset,
   onSearch,
+  extraActions,
 }) => {
   return (
     <div className="filter-panel">
@@ -73,14 +75,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         })}
       </div>
       <div className="filter-actions">
-        <button className="btn btn-primary btn-medium" onClick={onReset}>
-          필터 초기화
-        </button>
-        {onSearch && (
-          <button className="btn btn-primary btn-medium" onClick={onSearch}>
-            검색
+        {extraActions}
+        <div>
+          <button className="btn btn-primary btn-medium" onClick={onReset}>
+            필터 초기화
           </button>
-        )}
+          {onSearch && (
+            <button className="btn btn-primary btn-medium" onClick={onSearch}>
+              검색
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

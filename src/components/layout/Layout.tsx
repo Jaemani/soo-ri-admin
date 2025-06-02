@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { logout, getCurrentAdmin } from '../../services/auth';
+import { getCurrentAdmin } from '../../services/auth';
 import './Layout.css';
 
 // SVG Icons
@@ -23,27 +23,10 @@ const LogoutIcon = () => (
 const Layout: React.FC = () => {
   const currentAdmin = getCurrentAdmin();
 
-  const handleLogout = () => {
-    if (window.confirm('로그아웃 하시겠습니까?')) {
-      logout();
-    }
-  };
-
   return (
     <div className="app-container">
-      <Sidebar />
+      <Sidebar currentAdmin={currentAdmin} />
       <div className="content-area">
-        <header className="top-header">
-          <div className="header-actions">
-            <div className="user-profile">
-              <img src="https://cdn0.iconfinder.com/data/icons/remoji-soft-1/512/emoji-thumbs-up-smile.png" alt="User" />
-              <span>{currentAdmin.label || '관리자'}</span>
-            </div>
-            <button className="logout-button" onClick={handleLogout} title="로그아웃">
-              <LogoutIcon />
-            </button>
-          </div>
-        </header>
         <main className="main-content">
           <Outlet />
         </main>

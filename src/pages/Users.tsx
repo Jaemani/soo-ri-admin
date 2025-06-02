@@ -65,7 +65,7 @@ const Users: React.FC = () => {
     }
   }, []); // No dependencies needed since we use refs for state
 
-  const fetchUsers = useCallback(async (page = currentPage, searchTerm = search) => {
+  const fetchUsers = useCallback(async (page = currentPage, searchTerm = '') => {
     setLoading(true);
     try {
       const response = await userService.getUsers({
@@ -89,7 +89,7 @@ const Users: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search, itemsPerPage, calculateAidInBackground]);
+  }, [currentPage, itemsPerPage, calculateAidInBackground]);
 
   // Initial fetch
   useEffect(() => {
@@ -99,17 +99,18 @@ const Users: React.FC = () => {
   const handleFilterReset = () => {
     setSearch('');
     setCurrentPage(1);
-    // The fetchUsers will automatically be called by useEffect when search/currentPage changes
+    fetchUsers(1, '');
   };
 
   const handleSearch = () => {
     setCurrentPage(1);
-    // The fetchUsers will automatically be called by useEffect when currentPage changes
+    fetchUsers(1, search);
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
+      fetchUsers(newPage, search);
     }
   };
 
@@ -361,7 +362,7 @@ const Users: React.FC = () => {
             onChange={e => setSearch(e.target.value)}
           />
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Button type="button" variant="primary" size="medium" onClick={handleFilterReset}>필터초기화</Button>
+            <Button type="button" variant="primary" size="medium" onClick={handleFilterReset}>지우기</Button>
             <Button type="button" variant="primary" size="medium" onClick={handleSearch}>검색</Button>
           </div>
         </div>

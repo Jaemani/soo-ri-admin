@@ -28,7 +28,7 @@ const SelfChecks: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<FilterState>(initialFilter);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(15);
   const [selectedSelfCheck, setSelectedSelfCheck] = useState<SelfCheck | null>(null);
 
   // Ref to prevent duplicate API calls in StrictMode
@@ -193,7 +193,7 @@ const SelfChecks: React.FC = () => {
           </thead>
           <tbody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
+              Array.from({ length: 15 }).map((_, i) => (
                 <tr key={i} className="skeleton-row">
                   <td><div className="skeleton-cell" style={{ width: `${70 + (i % 3) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${75 - (i % 3) * 5}%` }}></div></td>

@@ -1,5 +1,8 @@
 .sidebar {
-  width: 280px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
   height: 100vh;
   background: linear-gradient(180deg, #2a3f90 0%, #1e2b66 100%);
   color: white;
@@ -8,6 +11,7 @@
   flex-direction: column;
   overflow-y: auto;
   transition: all 0.3s ease;
+  z-index: 100;
 }
 
 .sidebar-header {

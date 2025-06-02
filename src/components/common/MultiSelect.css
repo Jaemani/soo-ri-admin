@@ -1,6 +1,6 @@
 .multiselect {
   position: relative;
-  width: 100%;
+  width: 80%;
 }
 
 .multiselect-control {
@@ -162,7 +162,7 @@
 .multiselect-option-label {
   flex: 1;
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: 0.87rem;
   font-weight: inherit;
   line-height: inherit;
   color: inherit;

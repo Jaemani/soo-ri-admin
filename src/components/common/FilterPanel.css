@@ -84,7 +84,6 @@
 .filter-item select:focus {
   outline: none;
   background-color: #ffffff;
-  box-shadow: 0 0 0 2px #dbe4ff;
 }
 
 .filter-actions {

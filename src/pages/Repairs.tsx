@@ -48,7 +48,7 @@ const Repairs: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState<FilterState>(initialFilter);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(15);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedRepair, setSelectedRepair] = useState<Repair | null>(null);
 
@@ -148,7 +148,15 @@ const Repairs: React.FC = () => {
   // Format repair categories
   const formatRepairCategories = (categories: string[]) => {
     if (!categories || categories.length === 0) return '없음';
-    return categories.join(', ');
+    return (
+      <div className="repair-categories">
+        {categories.map((category, index) => (
+          <span key={index} className="repair-category-tag">
+            {category}
+          </span>
+        ))}
+      </div>
+    );
   };
 
   const handleRepairDetailClick = (repair: Repair) => {
@@ -273,10 +281,11 @@ const Repairs: React.FC = () => {
           </thead>
           <tbody>
             {loading ? (
-              Array.from({ length: 8 }).map((_, i) => (
+              Array.from({ length: 15 }).map((_, i) => (
                 <tr key={i} className="skeleton-row">
                   <td><div className="skeleton-cell" style={{ width: `${70 + (i % 3) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${75 - (i % 3) * 5}%` }}></div></td>
+                  <td><div className="skeleton-cell" style={{ width: `${70 + (i % 4) * 5}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${80 - (i % 3) * 8}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${50 + (i % 4) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${65 - (i % 2) * 10}%` }}></div></td>
@@ -292,9 +301,7 @@ const Repairs: React.FC = () => {
                   <td title={repair.user?.name || '미상'}>{repair.user?.name || '미상'}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>
-                    <span className={`tag ${repair.isAccident ? 'tag-accident' : 'tag-regular'}`}>
-                      {repair.isAccident ? '사고' : '정기점검'}
-                    </span>
+                    {repair.isAccident ? '사고' : '정기점검'}
                   </td>
                   <td>{formatRepairCategories(repair.repairCategories)}</td>
                   <td>{repair.billingPrice.toLocaleString()}원</td>

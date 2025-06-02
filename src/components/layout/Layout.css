@@ -11,18 +11,22 @@
   flex-direction: column;
   overflow: hidden;
   margin-left: 260px;
+  margin-top: 70px;
 }
 
 .top-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 70px;
   background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 50px;
+  padding: 0 50px 0 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  z-index: 10;
-  position: relative;
+  z-index: 50;
   margin: 0;
 }
 

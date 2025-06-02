@@ -93,14 +93,21 @@
   gap: 0.5rem;
   padding-top: 1rem;
   border-top: 1px solid var(--gray-200);
-  margin-top: 0;
+  margin-top: 1rem;
   visibility: visible !important;
   opacity: 1 !important;
+  flex-wrap: wrap;
+}
+
+.filter-actions > :first-child {
+  flex: 0 0 auto;
 }
 
 .filter-actions > :last-child {
   display: flex;
   gap: 0.5rem;
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 /* Button styling is now handled by the standard Button component classes */ 

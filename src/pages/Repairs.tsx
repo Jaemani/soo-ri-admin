@@ -263,7 +263,6 @@ const Repairs: React.FC = () => {
             <tr>
               <th>수리일자</th>
               <th>사용자</th>
-              <th>QR ID</th>
               <th>정비소</th>
               <th>수리 유형</th>
               <th>수리 항목</th>
@@ -278,7 +277,6 @@ const Repairs: React.FC = () => {
                 <tr key={i} className="skeleton-row">
                   <td><div className="skeleton-cell" style={{ width: `${70 + (i % 3) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${75 - (i % 3) * 5}%` }}></div></td>
-                  <td><div className="skeleton-cell" style={{ width: `${70 + (i % 4) * 5}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${80 - (i % 3) * 8}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${50 + (i % 4) * 10}%` }}></div></td>
                   <td><div className="skeleton-cell" style={{ width: `${65 - (i % 2) * 10}%` }}></div></td>
@@ -291,8 +289,7 @@ const Repairs: React.FC = () => {
               currentItems.map(repair => (
                 <tr key={repair.id || repair._id}>
                   <td>{formatDate(repair.repairedAt)}</td>
-                  <td>{repair.user?.name || '미상'}</td>
-                  <td title={repair.vehicle?.vehicleId || '미상'}>{truncateQRId(repair.vehicle?.vehicleId || '미상')}</td>
+                  <td title={repair.user?.name || '미상'}>{repair.user?.name || '미상'}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>
                     <span className={`tag ${repair.isAccident ? 'tag-accident' : 'tag-regular'}`}>
@@ -348,32 +345,34 @@ const Repairs: React.FC = () => {
       </Card>
 
       {selectedRepair && (
-        <Card style={{ marginTop: '1rem', padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>수리 상세정보</h2>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <Button 
-                onClick={() => handleRepairConfirmationDownload(selectedRepair)}
-                variant="primary" 
-                size="small"
-              >
-                수리확인서 다운로드
-              </Button>
-              <Button onClick={handleCloseRepairDetail} variant="secondary" size="small">닫기</Button>
+        <div className="repair-modal" onClick={handleCloseRepairDetail}>
+          <div className="repair-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="repair-modal-header">
+              <h2 className="repair-modal-title">수리 상세정보</h2>
+              <div className="repair-modal-actions">
+                <Button 
+                  onClick={() => handleRepairConfirmationDownload(selectedRepair)}
+                  variant="primary" 
+                  size="small"
+                >
+                  수리확인서 다운로드
+                </Button>
+                <button onClick={handleCloseRepairDetail} className="repair-modal-close">×</button>
+              </div>
+            </div>
+            <div className="repair-detail">
+              <div className="repair-detail-item"><span className="repair-detail-label">사용자</span><span className="repair-detail-value">{selectedRepair.user?.name || '미상'}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">QR ID</span><span className="repair-detail-value">{selectedRepair.vehicle?.vehicleId || '미상'}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">수리일자</span><span className="repair-detail-value">{formatDate(selectedRepair.repairedAt)}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">정비소</span><span className="repair-detail-value">{selectedRepair.repairStationLabel}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">수리 유형</span><span className="repair-detail-value">{selectedRepair.isAccident ? '사고' : '정기점검'}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">수리 항목</span><span className="repair-detail-value">{formatRepairCategories(selectedRepair.repairCategories)}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">금액</span><span className="repair-detail-value">{selectedRepair.billingPrice.toLocaleString()}원</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">메모</span><span className="repair-detail-value">{selectedRepair.memo || '-'}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">ID</span><span className="repair-detail-value">{selectedRepair.id || selectedRepair._id}</span></div>
             </div>
           </div>
-          <div className="repair-detail">
-            <div className="repair-detail-item"><span className="repair-detail-label">사용자</span><span className="repair-detail-value">{selectedRepair.user?.name || '미상'}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">QR ID</span><span className="repair-detail-value">{selectedRepair.vehicle?.vehicleId || '미상'}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">수리일자</span><span className="repair-detail-value">{formatDate(selectedRepair.repairedAt)}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">정비소</span><span className="repair-detail-value">{selectedRepair.repairStationLabel}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">수리 유형</span><span className="repair-detail-value">{selectedRepair.isAccident ? '사고' : '정기점검'}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">수리 항목</span><span className="repair-detail-value">{formatRepairCategories(selectedRepair.repairCategories)}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">금액</span><span className="repair-detail-value">{selectedRepair.billingPrice.toLocaleString()}원</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">메모</span><span className="repair-detail-value">{selectedRepair.memo || '-'}</span></div>
-            <div className="repair-detail-item"><span className="repair-detail-label">ID</span><span className="repair-detail-value">{selectedRepair.id || selectedRepair._id}</span></div>
-          </div>
-        </Card>
+        </div>
       )}
     </div>
   );

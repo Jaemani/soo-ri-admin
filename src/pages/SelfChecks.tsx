@@ -290,108 +290,158 @@ const SelfChecks: React.FC = () => {
       </Card>
 
       {selectedSelfCheck && (
-        <Card style={{ marginTop: '1rem', padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>자가진단 상세정보</h2>
-            <Button onClick={handleCloseDetail} variant="secondary" size="small">닫기</Button>
+        <div className="selfcheck-modal" onClick={handleCloseDetail}>
+          <div className="selfcheck-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="selfcheck-modal-header">
+              <h2 className="selfcheck-modal-title">자가진단 상세정보</h2>
+              <button onClick={handleCloseDetail} className="selfcheck-modal-close">×</button>
+            </div>
+            
+            {/* Basic Information Section */}
+            <div className="selfcheck-section">
+              <h3 className="selfcheck-section-title">기본정보</h3>
+              <div className="selfcheck-basic-info">
+                <div className="selfcheck-info-card">
+                  <span className="selfcheck-info-label">사용자</span>
+                  <span className="selfcheck-info-value" style={{ fontSize: '0.925rem' }}>{selectedSelfCheck.user?.name || '미상'}</span>
+                </div>
+                <div className="selfcheck-info-card">
+                  <span className="selfcheck-info-label">QR ID</span>
+                  <span className="selfcheck-info-value">{selectedSelfCheck.vehicle?.vehicleId || '미상'}</span>
+                </div>
+                <div className="selfcheck-info-card">
+                  <span className="selfcheck-info-label">자가진단 일시</span>
+                  <span className="selfcheck-info-value">{formatDate(selectedSelfCheck.createdAt)}</span>
+                </div>
+                <div className="selfcheck-info-card">
+                  <span className="selfcheck-info-label">ID</span>
+                  <span className="selfcheck-info-value" style={{ fontSize: '0.925rem', fontFamily: 'monospace' }}>{selectedSelfCheck._id}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Check Results Section */}
+            <div className="selfcheck-section">
+              <h3 className="selfcheck-section-title">점검결과</h3>
+              <div className="selfcheck-categories">
+                
+                {/* Motor Section */}
+                <div className="selfcheck-category">
+                  <h4 className="selfcheck-category-title">모터</h4>
+                  <div className="selfcheck-category-items">
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">모터 소음 또는 진동</span>
+                      {renderIssueBadge(selectedSelfCheck.motorNoise)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">속도가 느리거나 빠름</span>
+                      {renderIssueBadge(selectedSelfCheck.abnormalSpeed)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Battery Section */}
+                <div className="selfcheck-category">
+                  <h4 className="selfcheck-category-title">배터리</h4>
+                  <div className="selfcheck-category-items">
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">계기판 배터리 점멸</span>
+                      {renderIssueBadge(selectedSelfCheck.batteryBlinking)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">충전 안됨</span>
+                      {renderIssueBadge(selectedSelfCheck.chargingNotStart)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">배터리 방전 잦음</span>
+                      {renderIssueBadge(selectedSelfCheck.batteryDischargeFast)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">완충이 안됨</span>
+                      {renderIssueBadge(selectedSelfCheck.incompleteCharging)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Brake Section */}
+                <div className="selfcheck-category">
+                  <h4 className="selfcheck-category-title">제동</h4>
+                  <div className="selfcheck-category-items">
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">브레이크 지연</span>
+                      {renderIssueBadge(selectedSelfCheck.breakDelay)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">브레이크 패드 마모 또는 금</span>
+                      {renderIssueBadge(selectedSelfCheck.breakPadIssue)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tire Section */}
+                <div className="selfcheck-category">
+                  <h4 className="selfcheck-category-title">타이어</h4>
+                  <div className="selfcheck-category-items">
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">타이어 펑크 잦음</span>
+                      {renderIssueBadge(selectedSelfCheck.tubePunctureFrequent)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">타이어 마모 잦음</span>
+                      {renderIssueBadge(selectedSelfCheck.tireWearFrequent)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seat Section */}
+                <div className="selfcheck-category">
+                  <h4 className="selfcheck-category-title">시트</h4>
+                  <div className="selfcheck-category-items">
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">시트 느슨함</span>
+                      {renderIssueBadge(selectedSelfCheck.seatUnstable)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">시트 커버 손상</span>
+                      {renderIssueBadge(selectedSelfCheck.seatCoverIssue)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Frame Section */}
+                <div className="selfcheck-category">
+                  <h4 className="selfcheck-category-title">프레임</h4>
+                  <div className="selfcheck-category-items">
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">프레임 소음</span>
+                      {renderIssueBadge(selectedSelfCheck.frameNoise)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">프레임 깨지거나 금 가거나 휘어짐</span>
+                      {renderIssueBadge(selectedSelfCheck.frameCrack)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Others Section */}
+                <div className="selfcheck-category">
+                  <h4 className="selfcheck-category-title">기타</h4>
+                  <div className="selfcheck-category-items">
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">발걸이 느슨함</span>
+                      {renderIssueBadge(selectedSelfCheck.footRestLoose)}
+                    </div>
+                    <div className="selfcheck-check-item">
+                      <span className="selfcheck-check-label">미끄럼 방지 고무 패드 마모</span>
+                      {renderIssueBadge(selectedSelfCheck.antislipWorn)}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
-          <div className="selfcheck-detail">
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">사용자</span>
-              <span className="selfcheck-detail-value">{selectedSelfCheck.user?.name || '미상'}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">QR ID</span>
-              <span className="selfcheck-detail-value">{selectedSelfCheck.vehicle?.vehicleId || '미상'}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">자가진단 일시</span>
-              <span className="selfcheck-detail-value">{formatDate(selectedSelfCheck.createdAt)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">ID</span>
-              <span className="selfcheck-detail-value">{selectedSelfCheck._id}</span>
-            </div>
-
-            <h3 style={{ gridColumn: '1 / -1', fontSize: '1rem', fontWeight: 600, margin: '1rem 0 0.5rem 0' }}>모터 관련</h3>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">모터 소음 또는 진동</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.motorNoise)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">속도가 느리거나 빠름</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.abnormalSpeed)}</span>
-            </div>
-
-            <h3 style={{ gridColumn: '1 / -1', fontSize: '1rem', fontWeight: 600, margin: '1rem 0 0.5rem 0' }}>배터리 관련</h3>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">계기판 배터리 점멸</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.batteryBlinking)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">충전 안됨</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.chargingNotStart)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">배터리 방전 잦음</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.batteryDischargeFast)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">완충이 안됨</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.incompleteCharging)}</span>
-            </div>
-
-            <h3 style={{ gridColumn: '1 / -1', fontSize: '1rem', fontWeight: 600, margin: '1rem 0 0.5rem 0' }}>제동 관련</h3>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">브레이크 지연</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.breakDelay)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">브레이크 패드 마모 또는 금</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.breakPadIssue)}</span>
-            </div>
-
-            <h3 style={{ gridColumn: '1 / -1', fontSize: '1rem', fontWeight: 600, margin: '1rem 0 0.5rem 0' }}>타이어 관련</h3>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">타이어 펑크 잦음</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.tubePunctureFrequent)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">타이어 마모 잦음</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.tireWearFrequent)}</span>
-            </div>
-
-            <h3 style={{ gridColumn: '1 / -1', fontSize: '1rem', fontWeight: 600, margin: '1rem 0 0.5rem 0' }}>시트 관련</h3>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">시트 느슨함</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.seatUnstable)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">시트 커버 손상</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.seatCoverIssue)}</span>
-            </div>
-
-            <h3 style={{ gridColumn: '1 / -1', fontSize: '1rem', fontWeight: 600, margin: '1rem 0 0.5rem 0' }}>기타</h3>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">발걸이 느슨함</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.footRestLoose)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">미끄럼 방지 고무 패드 마모</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.antislipWorn)}</span>
-            </div>
-
-            <h3 style={{ gridColumn: '1 / -1', fontSize: '1rem', fontWeight: 600, margin: '1rem 0 0.5rem 0' }}>프레임 관련</h3>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">프레임 소음</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.frameNoise)}</span>
-            </div>
-            <div className="selfcheck-detail-item">
-              <span className="selfcheck-detail-label">프레임 깨지거나 금 가거나 휘어짐</span>
-              <span className="selfcheck-detail-value">{renderIssueBadge(selectedSelfCheck.frameCrack)}</span>
-            </div>
-          </div>
-        </Card>
+        </div>
       )}
     </div>
   );

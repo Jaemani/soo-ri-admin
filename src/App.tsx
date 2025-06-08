@@ -8,10 +8,10 @@ import SelfChecks from './pages/SelfChecks';
 import { UserProvider } from './contexts/UserContext';
 import Login from './pages/Login';
 import PrivateRoute from './components/PrivateRoute';
+import Statistics from './pages/Statistics';
 
 // Placeholder components for routes
 const Monitoring = () => <div>Self-Diagnosis Monitoring Page</div>;
-const Statistics = () => <div>Statistics Page</div>;
 
 const App: React.FC = () => {
   return (
@@ -25,6 +25,7 @@ const App: React.FC = () => {
             <Route path="users" element={<Users />} />
             <Route path="repairs" element={<Repairs />} />
             <Route path="selfchecks" element={<SelfChecks />} />
+            <Route path="statistics" element={<Statistics />} />
           </Route>
         </Route>
         {/* Catch all route - redirect to home */}

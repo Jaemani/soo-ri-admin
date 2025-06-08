@@ -105,15 +105,25 @@ export const repairService = {
   // Get all repairs for admin with filters and pagination
   getAllRepairs: async (params?: RepairFilters): Promise<RepairsResponse> => {
     try {
+      // Clean the filters first!
+      const cleanFilters = { ...params };
+      if (!cleanFilters.startDate || isNaN(Date.parse(cleanFilters.startDate))) {
+        delete cleanFilters.startDate;
+      }
+      if (!cleanFilters.endDate || isNaN(Date.parse(cleanFilters.endDate))) {
+        delete cleanFilters.endDate;
+      }
+
+      // Now build the query string from the cleaned filters
       const queryParams = new URLSearchParams();
-      if (params) {
-        Object.entries(params).forEach(([key, value]) => {
+      if (cleanFilters) {
+        Object.entries(cleanFilters).forEach(([key, value]) => {
           if (value !== undefined && value !== '') {
             queryParams.append(key, value.toString());
           }
         });
       }
-      
+
       const response = await fetchApi(`/admin/repairs?${queryParams.toString()}`);
       return response;
     } catch (error) {
@@ -180,5 +190,34 @@ export const repairService = {
       });
     }
     return fetchApi(`/repairs/stats?${queryParams.toString()}`);
+  },
+
+  getRepairDate: (repair: Repair) => {
+    if (
+      repair.repairedAt &&
+      typeof repair.repairedAt === 'object' &&
+      repair.repairedAt !== null
+    ) {
+      // Handle { $date: { $numberLong: "..." } }
+      if (
+        '$date' in repair.repairedAt &&
+        typeof (repair.repairedAt as any).$date === 'object' &&
+        (repair.repairedAt as any).$date !== null &&
+        '$numberLong' in (repair.repairedAt as any).$date
+      ) {
+        return new Date(Number((repair.repairedAt as any).$date.$numberLong));
+      }
+      // Handle { $date: "..." }
+      if (
+        '$date' in repair.repairedAt &&
+        typeof (repair.repairedAt as any).$date === 'string'
+      ) {
+        return new Date((repair.repairedAt as any).$date);
+      }
+    }
+    if (typeof repair.repairedAt === 'string') {
+      return new Date(repair.repairedAt);
+    }
+    return new Date(repair.repairedAt as any);
   }
 }; 

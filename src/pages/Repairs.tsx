@@ -41,6 +41,36 @@ const truncateQRId = (qrId: string, maxLength: number = 15): string => {
   return qrId.substring(0, maxLength) + '...';
 };
 
+// Helper to robustly extract Date from repairedAt
+const getRepairDate = (repair: Repair) => {
+  if (
+    repair.repairedAt &&
+    typeof repair.repairedAt === 'object' &&
+    repair.repairedAt !== null
+  ) {
+    // Handle { $date: { $numberLong: "..." } }
+    if (
+      '$date' in repair.repairedAt &&
+      typeof (repair.repairedAt as any).$date === 'object' &&
+      (repair.repairedAt as any).$date !== null &&
+      '$numberLong' in (repair.repairedAt as any).$date
+    ) {
+      return new Date(Number((repair.repairedAt as any).$date.$numberLong));
+    }
+    // Handle { $date: "..." }
+    if (
+      '$date' in repair.repairedAt &&
+      typeof (repair.repairedAt as any).$date === 'string'
+    ) {
+      return new Date((repair.repairedAt as any).$date);
+    }
+  }
+  if (typeof repair.repairedAt === 'string') {
+    return new Date(repair.repairedAt);
+  }
+  return new Date(repair.repairedAt as any);
+};
+
 const Repairs: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [repairs, setRepairs] = useState<Repair[]>([]);
@@ -292,7 +322,7 @@ const Repairs: React.FC = () => {
             ) : currentItems.length > 0 ? (
               currentItems.map(repair => (
                 <tr key={repair.id || repair._id}>
-                  <td>{formatDate(repair.repairedAt)}</td>
+                  <td>{formatDate(getRepairDate(repair))}</td>
                   <td title={repair.user?.name || '미상'}>{repair.user?.name || '미상'}</td>
                   <td>{repair.repairStationLabel}</td>
                   <td>
@@ -365,7 +395,7 @@ const Repairs: React.FC = () => {
             <div className="repair-detail">
               <div className="repair-detail-item"><span className="repair-detail-label">사용자</span><span className="repair-detail-value">{selectedRepair.user?.name || '미상'}</span></div>
               <div className="repair-detail-item"><span className="repair-detail-label">QR ID</span><span className="repair-detail-value">{selectedRepair.vehicle?.vehicleId || '미상'}</span></div>
-              <div className="repair-detail-item"><span className="repair-detail-label">수리일자</span><span className="repair-detail-value">{formatDate(selectedRepair.repairedAt)}</span></div>
+              <div className="repair-detail-item"><span className="repair-detail-label">수리일자</span><span className="repair-detail-value">{formatDate(getRepairDate(selectedRepair))}</span></div>
               <div className="repair-detail-item"><span className="repair-detail-label">정비소</span><span className="repair-detail-value">{selectedRepair.repairStationLabel}</span></div>
               <div className="repair-detail-item"><span className="repair-detail-label">수리 유형</span><span className="repair-detail-value">{selectedRepair.isAccident ? '사고' : '정기점검'}</span></div>
               <div className="repair-detail-item"><span className="repair-detail-label">수리 항목</span><span className="repair-detail-value">{formatRepairCategories(selectedRepair.repairCategories)}</span></div>

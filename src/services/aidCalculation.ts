@@ -83,21 +83,33 @@ export const aidCalculationService = {
       console.log('Grouping repairs by user...');
       const userRepairs: { [userId: string]: any[] } = {};
       
-      // Create vehicle to user lookup
+      // Create vehicle to user lookup (by both _id and vehicleId string, as strings)
       const vehicleToUserMap: { [vehicleId: string]: string } = {};
       users.forEach(user => {
         const vehicles = userVehicleLookup[user._id] || [];
+        console.log(`User: ${user.name} (${user._id}) vehicles:`, vehicles.map(v => ({ _id: v._id, vehicleId: v.vehicleId })));
         vehicles.forEach(vehicle => {
           if (vehicle._id) {
-            vehicleToUserMap[vehicle._id] = user._id;
+            vehicleToUserMap[String(vehicle._id)] = user._id;
+          }
+          if (vehicle.vehicleId) {
+            vehicleToUserMap[String(vehicle.vehicleId)] = user._id;
           }
         });
       });
       
-      // Group repairs by user
+      console.log('vehicleToUserMap:', vehicleToUserMap);
+      
+      // Group repairs by user (compare as strings)
       allRepairs.forEach((repair: Repair) => {
+        console.log('Repair:', {
+          _id: repair._id,
+          vehicleId: repair.vehicleId,
+          repairedAt: repair.repairedAt,
+          billingPrice: repair.billingPrice
+        });
         if (repair.vehicleId) {
-          const userId = vehicleToUserMap[repair.vehicleId];
+          const userId = vehicleToUserMap[String(repair.vehicleId)];
           if (userId) {
             if (!userRepairs[userId]) {
               userRepairs[userId] = [];
@@ -109,23 +121,55 @@ export const aidCalculationService = {
       
       console.log(`Grouped repairs for ${Object.keys(userRepairs).length} users`);
       
+      console.log('userRepairs:', userRepairs);
+      
       // 5. Calculate aid for each user
       onProgress?.('지원금 계산 중...');
       
       // Get current year start date (January 1st of current year)
+      // const currentYear = new Date().getFullYear();
+      // const currentYearStart = new Date(currentYear, 0, 1); // January 1st of current year
+      // TEMP: Treat 2025 as the current year for testing
       const currentYear = new Date().getFullYear();
       const currentYearStart = new Date(currentYear, 0, 1); // January 1st of current year
+      
+      // Helper to robustly extract Date from repairedAt
+      const getRepairDate = (repair: Repair) => {
+        if (
+          repair.repairedAt &&
+          typeof repair.repairedAt === 'object' &&
+          repair.repairedAt !== null &&
+          typeof (repair.repairedAt as any).$date === 'string'
+        ) {
+          return new Date((repair.repairedAt as any).$date);
+        }
+        if (typeof repair.repairedAt === 'string') {
+          // Try to parse as ISO string
+          return new Date(new Date(repair.repairedAt).toISOString());
+        }
+        return new Date(repair.repairedAt as any);
+      };
       
       users.forEach(user => {
         const repairs = userRepairs[user._id] || [];
         
         // Filter repairs to only include current year repairs (from January 1st)
         const currentYearRepairs = repairs.filter((repair: Repair) => {
-          const repairDate = new Date(repair.repairedAt);
+          const repairDate = getRepairDate(repair);
           return repairDate >= currentYearStart;
         });
         
-        const totalRepairAmount = currentYearRepairs.reduce((sum, repair) => sum + (repair.billingPrice || 0), 0);
+        // Debug: Log repairs used for this user
+        console.log(`User: ${user.name} (${user._id}) - Current year repairs:`);
+        currentYearRepairs.forEach(r => {
+          console.log(`  RepairID: ${r._id || r.id}, billingPrice: ${r.billingPrice}, billedAmount: ${r.billedAmount}, repairedAt: ${r.repairedAt}, vehicleId: ${r.vehicleId}`);
+        });
+        
+        // Use billingPrice if present, otherwise billedAmount
+        const totalRepairAmount = currentYearRepairs.reduce((sum, repair) => {
+          const amount = (repair.billingPrice != null ? repair.billingPrice : repair.billedAmount) || 0;
+          return sum + amount;
+        }, 0);
         
         // Find station for aid calculation
         let station: RepairStation | undefined;

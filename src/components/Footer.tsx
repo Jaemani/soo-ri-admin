@@ -5,7 +5,7 @@ const Footer: React.FC = () => (
 <footer className="footer"
     style={{
       background: '#F5F3E6',
-      height: 366,
+      height: 200,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -18,32 +18,32 @@ const Footer: React.FC = () => (
     <div
         style={{
             display: 'flex',
-            gap: 45,
+            gap: 75,
             alignItems: 'center',
             marginBottom: 32,
-            height: 158,
+            height: 60,
             padding: 0,
         }}
     >
-        <div style={{ height: 158, display: 'flex', alignItems: 'center' }}>
+        <div style={{ height: 60, display: 'flex', alignItems: 'center' }}>
             <img
                 src={'/welfare_center_logo.png'}
                 alt="성동종합사회복지관 로고"
-                style={{ height: 158 }}
+                style={{ height: 60 }}
             />
         </div>
-        <div style={{ height: 158, display: 'flex', alignItems: 'center' }}>
+        <div style={{ height: 60, display: 'flex', alignItems: 'center' }}>
             <img
                 src={'/kakao_impact_logo_color.png'}
                 alt="카카오임팩트 로고"
-                style={{ height: 80 }}
+                style={{ height: 50 }}
             />
         </div>
-        <div style={{ height: 158, display: 'flex', alignItems: 'center' }}>
+        <div style={{ height: 60, display: 'flex', alignItems: 'center' }}>
             <img
                 src={'/catch_star_logo.png'}
                 alt="별따러가자 로고"
-                style={{ height: 90 }}
+                style={{ height: 60 }}
             />
         </div>
     </div>

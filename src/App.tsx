@@ -9,6 +9,7 @@ import { UserProvider } from './contexts/UserContext';
 import Login from './pages/Login';
 import PrivateRoute from './components/PrivateRoute';
 import Statistics from './pages/Statistics';
+import Footer from './components/Footer'
 
 // Placeholder components for routes
 const Monitoring = () => <div>Self-Diagnosis Monitoring Page</div>;
@@ -16,21 +17,24 @@ const Monitoring = () => <div>Self-Diagnosis Monitoring Page</div>;
 const App: React.FC = () => {
   return (
     <UserProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route element={<PrivateRoute />}>
-          <Route element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="users" element={<Users />} />
-            <Route path="repairs" element={<Repairs />} />
-            <Route path="selfchecks" element={<SelfChecks />} />
-            <Route path="statistics" element={<Statistics />} />
+      <>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<PrivateRoute />}>
+            <Route element={<Layout />}>
+              <Route index element={<Navigate to="/dashboard" />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="users" element={<Users />} />
+              <Route path="repairs" element={<Repairs />} />
+              <Route path="selfchecks" element={<SelfChecks />} />
+              <Route path="statistics" element={<Statistics />} />
+            </Route>
           </Route>
-        </Route>
-        {/* Catch all route - redirect to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Catch all route - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Footer/>
+      </>
     </UserProvider>
   );
 };

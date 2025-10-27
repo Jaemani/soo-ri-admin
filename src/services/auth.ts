@@ -16,7 +16,7 @@ interface LoginCredentials {
 
 // Set this to false when you want to use the real API
 const USE_MOCK = false;
-const API_BASE_URL = `${process.env.REACT_APP_API_URL}/admin/login`;
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || '/api'}/admin/login`;
 
 // Centralized function to handle authentication failures
 export const handleAuthFailure = () => {

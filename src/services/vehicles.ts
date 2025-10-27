@@ -1,4 +1,6 @@
 import { fetchApi } from './api';
+import { db, ensureFirebaseAuth } from './firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export interface Vehicle {
   _id: string;
@@ -21,6 +23,30 @@ export const vehiclesService = {
   // Get vehicles for a user
   getVehiclesForUser: async (userId: string): Promise<VehiclesResponse> => {
     try {
+      const useFirestore = process.env.REACT_APP_USE_FIRESTORE === 'true';
+
+      if (useFirestore) {
+        await ensureFirebaseAuth();
+        const vehiclesCol = collection(db, 'vehicles');
+        const q = query(vehiclesCol, where('userId', '==', userId));
+        const snapshot = await getDocs(q);
+
+        const vehicles: Vehicle[] = snapshot.docs.map((docSnap) => {
+          const data: any = docSnap.data();
+          return {
+            _id: (data._id as string) || docSnap.id,
+            vehicleId: data.vehicleId || '',
+            userId: data.userId || userId,
+            model: data.model,
+            purchasedAt: data.purchasedAt,
+            registeredAt: data.registeredAt,
+          };
+        });
+
+        console.log(`[Firestore] Loaded ${vehicles.length} vehicles for user ${userId}`);
+        return { success: true, vehicles };
+      }
+
       const response = await fetchApi(`/admin/vehicles/${userId}`);
       return Array.isArray(response) 
         ? { success: true, vehicles: response } 

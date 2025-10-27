@@ -18,7 +18,8 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/admin/login`, {
+      const apiBase = process.env.REACT_APP_API_URL || '/api';
+      const response = await fetch(`${apiBase}/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

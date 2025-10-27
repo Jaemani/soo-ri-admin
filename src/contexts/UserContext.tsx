@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UsersResponse } from '../services/users';
 import { userService } from '../services/users';
 import { ApiErrorImpl } from '../services/api';
+import { testFirestoreConnection } from '../services/firebase';
 
 interface UserContextType {
   users: User[];
@@ -24,12 +25,18 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [totalPages, setTotalPages] = useState(1);
 
   const refreshUsers = async () => {
+    const useFirestore = process.env.REACT_APP_USE_FIRESTORE === 'true' || !process.env.REACT_APP_API_URL;
     const token = localStorage.getItem('token');
-    if (!token) return;
+    // In Firestore mode, don't require API token
+    if (!useFirestore && !token) return;
     
     try {
       setLoading(true);
       setError(null);
+      if (useFirestore) {
+        const res = await testFirestoreConnection();
+        console.log('[Firestore] connection test =>', res);
+      }
       const response = await userService.getUsers();
       setUsers(response.users);
       setTotalUsers(response.total);

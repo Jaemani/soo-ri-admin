@@ -1,0 +1,243 @@
+[debug] [2025-10-27T11:06:08.100Z] ----------------------------------------------------------------------
+[debug] [2025-10-27T11:06:08.103Z] Command:       /usr/local/bin/node /usr/local/bin/firebase emulators:start --only functions
+[debug] [2025-10-27T11:06:08.104Z] CLI Version:   14.16.0
+[debug] [2025-10-27T11:06:08.104Z] Platform:      linux
+[debug] [2025-10-27T11:06:08.104Z] Node Version:  v22.12.0
+[debug] [2025-10-27T11:06:08.105Z] Time:          Mon Oct 27 2025 20:06:08 GMT+0900 (Korean Standard Time)
+[debug] [2025-10-27T11:06:08.105Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-10-27T11:06:08.538Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-27T11:06:08.539Z] > authorizing via signed-in user (leejaeman0227@gmail.com)
+[info] i  emulators: Starting emulators: functions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions"}}
+[debug] [2025-10-27T11:06:08.578Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2025-10-27T11:06:08.584Z] Emulator locator file path: /tmp/hub-soo-ri-admin.json
+[debug] [2025-10-27T11:06:08.585Z] [hub] writing locator at /tmp/hub-soo-ri-admin.json
+[debug] [2025-10-27T11:06:08.639Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5002}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] ⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, firestore, database, hosting, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, firestore, database, hosting, pubsub, storage, dataconnect\u001b[22m"}}
+[debug] [2025-10-27T11:06:08.815Z] defaultcredentials: writing to file /home/jaeman/.config/firebase/leejaeman0227_gmail_com_application_default_credentials.json
+[debug] [2025-10-27T11:06:08.818Z] Setting GAC to /home/jaeman/.config/firebase/leejaeman0227_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/jaeman/.config/firebase/leejaeman0227_gmail_com_application_default_credentials.json"}}
+[debug] [2025-10-27T11:06:08.820Z] Checked if tokens are valid: true, expires at: 1761564214626
+[debug] [2025-10-27T11:06:08.820Z] Checked if tokens are valid: true, expires at: 1761564214626
+[debug] [2025-10-27T11:06:08.821Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/soo-ri-admin/adminSdkConfig [none]
+[debug] [2025-10-27T11:06:09.482Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/soo-ri-admin/adminSdkConfig 200
+[debug] [2025-10-27T11:06:09.483Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/soo-ri-admin/adminSdkConfig {"projectId":"soo-ri-admin","storageBucket":"soo-ri-admin.firebasestorage.app"}
+[info] i  functions: Watching "/home/jaeman/Codes/soo-ri/soo-ri-admin/functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"/home/jaeman/Codes/soo-ri/soo-ri-admin/functions\" for Cloud Functions..."}}
+[debug] [2025-10-27T11:06:09.602Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2025-10-27T11:06:10.401Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase (soo-ri-admin)",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^4.9.0",
+    "solapi": "^5.5.2"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2025-10-27T11:06:10.401Z] Building nodejs source
+[debug] [2025-10-27T11:06:10.402Z] Failed to find version of module node: reached end of search path /home/jaeman/Codes/soo-ri/soo-ri-admin/functions/node_modules
+[warn] ⚠  functions: Your requested "node" version "20" doesn't match your global version "22". Using node@22 from host. 
+[info] i  functions: You are using a version of firebase-functions SDK (4.9.0) that does not have support for the newest Firebase Extensions features. Please update firebase-functions SDK to >=5.1.0 to use them correctly 
+[debug] [2025-10-27T11:06:10.408Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-10-27T11:06:10.553Z] Found firebase-functions binary at '/home/jaeman/Codes/soo-ri/soo-ri-admin/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8051
+
+[debug] [2025-10-27T11:06:13.353Z] Got response from /__/functions.yaml {"endpoints":{"sendSms":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"sendSms"},"api":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"region":["asia-northeast3"],"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[info] ✔  functions: Loaded functions definitions from source: sendSms, api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: sendSms, api."}}
+[info] ✔  functions[us-central1-sendSms]: http function initialized (http://127.0.0.1:5002/soo-ri-admin/us-central1/sendSms). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5002/soo-ri-admin/us-central1/sendSms)."}}
+[info] ✔  functions[asia-northeast3-api]: http function initialized (http://127.0.0.1:5002/soo-ri-admin/asia-northeast3/api). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5002/soo-ri-admin/asia-northeast3/api)."}}
+[debug] [2025-10-27T11:06:15.703Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: connect ECONNREFUSED 127.0.0.1:40001. If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌───────────┬────────────────┬─────────────────────────────────┐
+│ Emulator  │ Host:Port      │ View in Emulator UI             │
+├───────────┼────────────────┼─────────────────────────────────┤
+│ Functions │ 127.0.0.1:5002 │ http://127.0.0.1:4000/functions │
+└───────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2025-10-27T11:06:59.965Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:06:59.980Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:07:00.142Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:07:00.178Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:07:00.198Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:07:00.212Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:07:00.221Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:07:00.227Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:07:00.589Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/logo192.png
+[debug] [2025-10-27T11:07:31.331Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:07:31.338Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:11:46.306Z] File /home/jaeman/Codes/soo-ri/soo-ri-admin/functions/package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/jaeman/Codes/soo-ri/soo-ri-admin/functions/package.json changed, reloading triggers"}}
+[debug] [2025-10-27T11:11:47.319Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2025-10-27T11:11:48.111Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase (soo-ri-admin)",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^4.9.0",
+    "solapi": "^5.5.2"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2025-10-27T11:11:48.112Z] Building nodejs source
+[debug] [2025-10-27T11:11:48.112Z] Failed to find version of module node: reached end of search path /home/jaeman/Codes/soo-ri/soo-ri-admin/functions/node_modules
+[warn] ⚠  functions: Your requested "node" version "20" doesn't match your global version "22". Using node@22 from host. 
+[info] i  functions: You are using a version of firebase-functions SDK (4.9.0) that does not have support for the newest Firebase Extensions features. Please update firebase-functions SDK to >=5.1.0 to use them correctly 
+[debug] [2025-10-27T11:11:48.116Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-10-27T11:11:48.187Z] Found firebase-functions binary at '/home/jaeman/Codes/soo-ri/soo-ri-admin/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8615
+
+[debug] [2025-10-27T11:11:51.249Z] Got response from /__/functions.yaml {"endpoints":{"sendSms":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"sendSms"},"api":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"region":["asia-northeast3"],"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[info] ✔  functions: Loaded functions definitions from source: sendSms, api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: sendSms, api."}}
+[debug] [2025-10-27T11:13:16.580Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/main.100d3efb626f1d79e859.hot-update.json
+[debug] [2025-10-27T11:13:16.759Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:13:16.771Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:13:17.283Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:13:17.295Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:13:17.303Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:13:17.308Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:13:17.314Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:13:17.325Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:13:20.207Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:13:20.216Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:13:20.441Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:13:20.451Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:13:20.748Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/logo192.png
+[debug] [2025-10-27T11:13:21.348Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/logo192.png
+[debug] [2025-10-27T11:16:31.368Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:18:14.641Z] File /home/jaeman/Codes/soo-ri/soo-ri-admin/functions/package-lock.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/jaeman/Codes/soo-ri/soo-ri-admin/functions/package-lock.json changed, reloading triggers"}}
+[debug] [2025-10-27T11:18:15.648Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2025-10-27T11:18:16.458Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase (soo-ri-admin)",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^4.9.0",
+    "solapi": "^5.5.2"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2025-10-27T11:18:16.458Z] Building nodejs source
+[debug] [2025-10-27T11:18:16.459Z] Failed to find version of module node: reached end of search path /home/jaeman/Codes/soo-ri/soo-ri-admin/functions/node_modules
+[warn] ⚠  functions: Your requested "node" version "20" doesn't match your global version "22". Using node@22 from host. 
+[info] i  functions: You are using a version of firebase-functions SDK (4.9.0) that does not have support for the newest Firebase Extensions features. Please update firebase-functions SDK to >=5.1.0 to use them correctly 
+[debug] [2025-10-27T11:18:16.462Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-10-27T11:18:16.538Z] Found firebase-functions binary at '/home/jaeman/Codes/soo-ri/soo-ri-admin/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8173
+
+[debug] [2025-10-27T11:18:19.575Z] Got response from /__/functions.yaml {"endpoints":{"sendSms":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"sendSms"},"api":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"region":["asia-northeast3"],"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[info] ✔  functions: Loaded functions definitions from source: sendSms, api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: sendSms, api."}}
+[debug] [2025-10-27T11:21:25.436Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:21:25.457Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:21:25.629Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:25.637Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:25.648Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:21:25.655Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:25.666Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:25.678Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:21:26.178Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/logo192.png
+[debug] [2025-10-27T11:21:50.040Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:21:50.044Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:21:50.471Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:50.488Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:50.502Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:21:50.506Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:50.511Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:21:50.515Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:21:50.622Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/logo192.png
+[debug] [2025-10-27T11:21:52.975Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:21:52.984Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:30:42.657Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:30:42.678Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:30:42.946Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:30:42.956Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:30:42.971Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:30:42.984Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:30:42.993Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:30:42.996Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:30:44.201Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/logo192.png
+[debug] [2025-10-27T11:31:51.079Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:31:51.103Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:31:51.522Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:51.532Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:51.539Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:31:51.551Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:51.554Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:31:51.557Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:52.624Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:31:52.650Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:31:52.799Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:52.811Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:52.816Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:31:52.821Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:52.824Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:31:52.828Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:33:43.679Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:33:43.699Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/users
+[debug] [2025-10-27T11:33:43.881Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:33:43.910Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:33:43.915Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+[debug] [2025-10-27T11:33:43.929Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:33:43.933Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/admin/repairs
+[debug] [2025-10-27T11:33:43.939Z] Functions emulator received unknown request at path /soo-ri/asia-northeast3/api/repairStations
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 

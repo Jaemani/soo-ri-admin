@@ -1,4 +1,6 @@
 import { fetchApi } from './api';
+import { db, ensureFirebaseAuth } from './firebase';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
 
 export interface User {
   _id: string;
@@ -45,6 +47,32 @@ export const userService = {
     search?: string;
   }): Promise<UsersResponse> => {
     try {
+  const useFirestore = process.env.REACT_APP_USE_FIRESTORE === 'true';
+      if (useFirestore) {
+        await ensureFirebaseAuth();
+        // Simple Firestore fallback: fetch first N users from 'users' collection
+        const take = params?.limit ?? 25;
+        const usersCol = collection(db, 'users');
+        const q = query(usersCol, limit(take));
+        const snapshot = await getDocs(q);
+        const users: User[] = snapshot.docs.map((docSnap) => {
+          const data: any = docSnap.data();
+          return {
+            _id: (data._id as string) || docSnap.id,
+            name: data.name || '',
+            phoneNumber: data.phoneNumber || '',
+            role: (data.role as User['role']) || 'user',
+            recipientType: (data.recipientType as User['recipientType']) || '미등록',
+            supportedDistrict: data.supportedDistrict || '',
+            smsConsent: Boolean(data.smsConsent),
+            guardians: Array.isArray(data.guardians) ? data.guardians : [],
+            createdAt: data.createdAt || '',
+            updatedAt: data.updatedAt || ''
+          };
+        });
+        console.log(`[Firestore] Loaded ${users.length} users for connection test`);
+        return { success: true, users, totalPages: 1, currentPage: 1, total: users.length };
+      }
       const queryParams = new URLSearchParams();
       if (params) {
         Object.entries(params).forEach(([key, value]) => {

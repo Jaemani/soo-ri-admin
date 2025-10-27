@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import { userService, User as BaseUser } from '../services/users';
 import { aidCalculationService, UserAidInfo } from '../services/aidCalculation';
 import Card from '../components/common/Card';
@@ -176,7 +178,8 @@ const Users: React.FC = () => {
       console.log('Updating user:', editingUser, 'with data:', updateData);
       
       // Send update to the API
-      await userService.updateUser(editingUser._id, updateData);
+      const userDocRef = doc(db, 'users', editingUser._id);
+      await updateDoc(userDocRef, updateData);
       
       // Clear editing state
       setEditingUser(null);
@@ -459,4 +462,4 @@ const displayGuardians = (user: User) => {
   );
 };
 
-export default Users; 
+export default Users;

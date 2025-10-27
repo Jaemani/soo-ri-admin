@@ -2,8 +2,8 @@ import { Repair, DiagnosticReport } from '../types';
 import { User, UsersResponse } from './users';
 import { handleAuthFailure } from './auth';
 
-// Correctly using backticks for template literals to evaluate environment variables
-const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+// API base URL: default to '/api' so Firebase Hosting can rewrite to Cloud Functions
+const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 export interface ApiError {
   message: string;

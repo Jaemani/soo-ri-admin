@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "soo-ri-admin"
-  }
+    "default": "soo-ri",
+    "soo-ri": "soo-ri"
+  },
+  "targets": {},
+  "etags": {}
 }
